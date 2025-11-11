@@ -122,26 +122,34 @@
   - Stream full file with 200 status for non-range requests
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 9. Implement playlist management endpoints
-  - [ ] 9.1 Create GET /playlists endpoint
+- [x] 9. Implement playlist management endpoints
+
+
+
+
+  - [x] 9.1 Create GET /playlists endpoint
+
     - Add authentication middleware
     - Query Playlist model by userId from authenticated request
     - Populate songIds with song metadata
     - Return array of playlist objects
     - _Requirements: 5.2_
-  - [ ] 9.2 Create POST /playlists endpoint
+  - [x] 9.2 Create POST /playlists endpoint
+
     - Add authentication middleware
     - Extract playlist name from request body
     - Create new Playlist document with userId and name
     - Return created playlist object
     - _Requirements: 5.1_
-  - [ ] 9.3 Create PUT /playlists/:id endpoint
+  - [x] 9.3 Create PUT /playlists/:id endpoint
+
     - Add authentication middleware
     - Extract songIds array from request body
     - Verify all songIds reference existing songs
     - Update playlist's songIds and updatedAt fields
     - Return updated playlist object
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
+
   - [ ] 9.4 Create DELETE /playlists/:id endpoint
     - Add authentication middleware
     - Verify playlist belongs to authenticated user
@@ -150,6 +158,7 @@
     - _Requirements: 5.3_
 
 - [ ] 10. Implement error handling middleware
+
   - Create global error handler middleware
   - Format errors into consistent ErrorResponse structure
   - Map error types to appropriate HTTP status codes
@@ -158,6 +167,7 @@
   - _Requirements: 1.4, 2.5, 8.4, 10.4_
 
 - [ ] 11. Create Express application entry point
+
   - Initialize Express app in index.ts
   - Connect to MongoDB on startup
   - Register middleware (CORS, JSON parser, authentication)

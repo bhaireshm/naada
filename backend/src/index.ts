@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { connectDB } from './config/db';
 import songsRouter from './routes/songs';
+import playlistsRouter from './routes/playlists';
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use('/songs', songsRouter);
+app.use('/playlists', playlistsRouter);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
