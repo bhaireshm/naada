@@ -4,6 +4,7 @@ import cors from 'cors';
 import { connectDB } from './config/db';
 import songsRouter from './routes/songs';
 import playlistsRouter from './routes/playlists';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,12 @@ app.use('/playlists', playlistsRouter);
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
+
+// 404 handler - must be after all routes
+app.use(notFoundHandler);
+
+// Global error handler - must be last
+app.use(errorHandler);
 
 // Connect to MongoDB and start server
 connectDB()
