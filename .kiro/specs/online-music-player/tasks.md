@@ -81,11 +81,7 @@
 
 - [x] 6. Implement storage service
 
-
-
-
   - [x] 6.1 Create file upload function
-
 
     - Implement uploadFile() using AWS SDK PutObjectCommand
     - Accept file buffer, key, and MIME type as parameters
@@ -102,7 +98,7 @@
     - Handle and throw storage errors
     - _Requirements: 4.1, 10.3, 10.4_
 
-- [ ] 7. Implement song upload endpoint
+- [x] 7. Implement song upload endpoint
 
   - Create POST /songs/upload route with authentication middleware
   - Configure multer to handle multipart file upload
