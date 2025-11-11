@@ -209,15 +209,18 @@
   - Handle authentication errors
   - _Requirements: 1.1, 1.2_
 
-- [ ] 16. Build authentication pages
+- [x] 16. Build authentication pages
 
-  - [ ] 16.1 Create login page
+
+  - [x] 16.1 Create login page
+
     - Build login form with email and password inputs
     - Integrate with useAuth() hook
     - Handle form submission and errors
     - Redirect to library on success
     - _Requirements: 1.1, 1.2_
-  - [ ] 16.2 Create registration page
+  - [x] 16.2 Create registration page
+
     - Build signup form with email and password inputs
     - Integrate with useAuth() hook
     - Handle form submission and errors
