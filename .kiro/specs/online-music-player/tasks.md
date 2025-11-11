@@ -174,15 +174,19 @@
   - Register error handling middleware
   - Start server on configured port
   - Add health check endpoint GET /health
-  - _Requirements: All requirements_
+  - _Requirementcommit the completed tasks changes
 
-- [ ] 11.1 Write backend integration tests
+s: All requirements_
+
+- [x] 11.1 Write backend integration tests documentation
 
 
-  - Test song upload flow with duplicate detection
-  - Test song streaming with range requests
-  - Test playlist CRUD operations
-  - Mock external services (Firebase, R2, MongoDB)
+
+  - Create document file saying how to test/use the below mentioned.
+  - Doc to Test song upload flow with duplicate detection
+  - Doc to Test song streaming with range requests
+  - Doc to Test playlist CRUD operations
+  - Doc to create Mock external services (Firebase, R2, MongoDB)
   - _Requirements: All requirements_
 
 ## Frontend Implementation
@@ -237,7 +241,11 @@
     - Redirect to library on success
     - _Requirements: 1.1_
 
-- [ ] 17. Implement audio player component
+
+- [-] 17. Implement audio player component
+
+
+
   - Create AudioPlayer component with HTML5 audio element
   - Implement play, pause, and seek controls
   - Display current song metadata (title, artist)
@@ -247,6 +255,7 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [ ] 18. Build song upload component
+
   - Create UploadForm component with file input and metadata fields
   - Validate file type (audio formats only)
   - Display upload progress bar
@@ -256,6 +265,7 @@
   - _Requirements: 2.1, 3.1, 8.4_
 
 - [ ] 19. Create song library page
+
   - Build library page to display all uploaded songs
   - Fetch songs from backend on page load
   - Display song list with title, artist, and play button
@@ -264,6 +274,7 @@
   - _Requirements: 3.1, 3.2, 3.3, 7.2_
 
 - [ ] 20. Implement playlist management components
+
   - [ ] 20.1 Create PlaylistManager component
     - Display list of user's playlists
     - Provide create playlist button and form
@@ -271,6 +282,7 @@
     - Call backend playlist endpoints
     - _Requirements: 5.1, 5.2, 5.3_
   - [ ] 20.2 Create playlist detail page
+
     - Display playlist name and song list
     - Provide add song button with song selector
     - Provide remove song button for each song in playlist
@@ -279,6 +291,7 @@
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
 - [ ] 21. Build main application layout
+
   - Create root layout with navigation bar
   - Add links to library and playlists pages
   - Display current user email and logout button
