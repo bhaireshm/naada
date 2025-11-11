@@ -1,7 +1,7 @@
 import { Router, type Router as RouterType } from 'express';
 import multer from 'multer';
 import { verifyToken } from '../middleware/auth';
-import { uploadSong } from '../controllers/songController';
+import { uploadSong, streamSong } from '../controllers/songController';
 
 const router: RouterType = Router();
 
@@ -36,5 +36,8 @@ const upload = multer({
 
 // POST /songs/upload - Upload a new song
 router.post('/upload', verifyToken, upload.single('file'), uploadSong);
+
+// GET /songs/:id - Stream a song by ID
+router.get('/:id', verifyToken, streamSong);
 
 export default router;

@@ -194,14 +194,14 @@
 
 - [x] 14. Implement API client module
 
-
   - Create api.ts with HTTP client functions
   - Implement getIdToken() to retrieve current user's Firebase token
   - Create wrapper functions for all backend endpoints with automatic token injection
   - Implement error handling and response parsing
   - _Requirements: 1.2, 1.3_
+-
 
-- [ ] 15. Create authentication hook
+- [x] 15. Create authentication hook
 
   - Implement useAuth() hook to manage authentication state
   - Provide signUp(), signIn(), signOut() functions

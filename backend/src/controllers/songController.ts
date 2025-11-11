@@ -1,9 +1,11 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { generateFingerprint, checkDuplicate } from '../services/fingerprintService';
-import { uploadFile } from '../services/storageService';
+import { uploadFile, getFile } from '../services/storageService';
 import { Song } from '../models/Song';
 import { randomUUID } from 'crypto';
+import { GetObjectCommand } from '@aws-sdk/client-s3';
+import { r2Client, bucketName } from '../config/storage';
 
 /**
  * Handle song upload
@@ -111,5 +113,106 @@ export async function uploadSong(
         details: errorMessage,
       },
     });
+  }
+}
+
+/**
+ * Stream a song by ID
+ * GET /songs/:id
+ */
+export async function streamSong(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const { id } = req.params;
+
+    // Fetch song metadata from database
+    const song = await Song.findById(id);
+    
+    if (!song) {
+      res.status(404).json({
+        error: {
+          code: 'SONG_NOT_FOUND',
+          message: 'Song not found',
+        },
+      });
+      return;
+    }
+
+    // Get the Range header if present
+    const range = req.headers.range;
+
+    // First, get the file metadata to determine content length
+    const headCommand = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: song.fileKey,
+    });
+
+    const headResponse = await r2Client.send(headCommand);
+    const fileSize = headResponse.ContentLength || 0;
+
+    // Set common headers
+    res.setHeader('Content-Type', song.mimeType);
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    if (range) {
+      // Parse range header (format: "bytes=start-end")
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = end - start + 1;
+
+      // Validate range
+      if (start >= fileSize || end >= fileSize) {
+        res.status(416).json({
+          error: {
+            code: 'INVALID_RANGE',
+            message: 'Requested range not satisfiable',
+          },
+        });
+        return;
+      }
+
+      // Set headers for partial content
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+      res.setHeader('Content-Length', chunkSize);
+
+      // Retrieve file with range from R2
+      const rangeHeader = `bytes=${start}-${end}`;
+      const stream = await getFile(song.fileKey, rangeHeader);
+
+      // Pipe the stream to response
+      stream.pipe(res);
+    } else {
+      // No range request - stream full file
+      res.status(200);
+      res.setHeader('Content-Length', fileSize);
+
+      // Retrieve full file from R2
+      const stream = await getFile(song.fileKey);
+
+      // Pipe the stream to response
+      stream.pipe(res);
+    }
+  } catch (error) {
+    console.error('Song streaming error:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Only send JSON error if headers haven't been sent yet
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: {
+          code: 'STREAMING_FAILED',
+          message: 'Failed to stream song',
+          details: errorMessage,
+        },
+      });
+    } else {
+      // If headers were already sent, just end the response
+      res.end();
+    }
   }
 }
