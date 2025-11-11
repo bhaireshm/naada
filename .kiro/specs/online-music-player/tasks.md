@@ -12,8 +12,6 @@
 
 - [x] 2. Configure external service connections
 
-
-
   - [x] 2.1 Implement MongoDB connection module
 
     - Create db.ts with Mongoose connection logic
@@ -22,32 +20,35 @@
     - _Requirements: 2.1, 3.1, 5.1, 5.2, 6.1, 6.2, 8.2, 10.3_
   - [x] 2.2 Implement Firebase Admin SDK initialization
 
-
     - Create firebase.ts with Admin SDK initialization
     - Configure service account credentials from environment variables
     - Export admin instance for token verification
     - _Requirements: 1.3, 1.4, 9.1, 9.2, 9.3, 9.4_
   - [x] 2.3 Implement Cloudflare R2 client configuration
 
-
     - Create storage.ts with AWS SDK S3 client for R2
     - Configure endpoint, credentials, and bucket from environment variables
     - Export configured client instance
     - _Requirements: 4.1, 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 3. Implement data models
-  - [ ] 3.1 Create User model
+- [x] 3. Implement data models
+
+  - [x] 3.1 Create User model
+
     - Define Mongoose schema with uid, email, and createdAt fields
     - Add unique constraints on uid and email
     - Export User model
     - _Requirements: 1.1_
-  - [ ] 3.2 Create Song model
+
+  - [x] 3.2 Create Song model
+
     - Define Mongoose schema with title, artist, fileKey, mimeType, uploadedBy, fingerprint, and createdAt
     - Add index on fingerprint field for duplicate detection
     - Add unique constraint on fileKey
     - Export Song model
     - _Requirements: 2.2, 2.3, 2.4, 3.2, 3.3, 8.1, 8.2, 8.3, 10.2_
-  - [ ] 3.3 Create Playlist model
+  - [x] 3.3 Create Playlist model
+
     - Define Mongoose schema with name, userId, songIds array, createdAt, and updatedAt
     - Add reference relationships to User and Song models
     - Export Playlist model
