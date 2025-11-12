@@ -20,7 +20,25 @@ export async function getPlaylists(
       .populate('songIds', 'title artist mimeType createdAt')
       .exec();
 
-    res.status(200).json(playlists);
+    // Transform playlists to match frontend interface
+    const transformedPlaylists = playlists.map((playlist) => ({
+      id: (playlist._id as Types.ObjectId).toString(),
+      name: playlist.name,
+      userId: playlist.userId,
+      songIds: playlist.songIds.map((song: any) => 
+        song._id ? {
+          id: song._id.toString(),
+          title: song.title,
+          artist: song.artist,
+          mimeType: song.mimeType,
+          createdAt: song.createdAt,
+        } : song
+      ),
+      createdAt: playlist.createdAt,
+      updatedAt: playlist.updatedAt,
+    }));
+
+    res.status(200).json(transformedPlaylists);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.status(500).json({
@@ -74,7 +92,23 @@ export async function getPlaylist(
       return;
     }
 
-    res.status(200).json(playlist);
+    // Transform playlist to match frontend interface
+    const transformedPlaylist = {
+      id: (playlist._id as Types.ObjectId).toString(),
+      name: playlist.name,
+      userId: playlist.userId,
+      songIds: playlist.songIds.map((song: any) => ({
+        id: song._id.toString(),
+        title: song.title,
+        artist: song.artist,
+        mimeType: song.mimeType,
+        createdAt: song.createdAt,
+      })),
+      createdAt: playlist.createdAt,
+      updatedAt: playlist.updatedAt,
+    };
+
+    res.status(200).json(transformedPlaylist);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.status(500).json({
@@ -119,7 +153,17 @@ export async function createPlaylist(
 
     await playlist.save();
 
-    res.status(201).json({ playlist });
+    // Transform playlist to match frontend interface
+    const transformedPlaylist = {
+      id: (playlist._id as Types.ObjectId).toString(),
+      name: playlist.name,
+      userId: playlist.userId,
+      songIds: [],
+      createdAt: playlist.createdAt,
+      updatedAt: playlist.updatedAt,
+    };
+
+    res.status(201).json({ playlist: transformedPlaylist });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.status(500).json({
@@ -218,7 +262,23 @@ export async function updatePlaylist(
     // Populate and return updated playlist
     await playlist.populate('songIds', 'title artist mimeType createdAt');
 
-    res.status(200).json({ playlist });
+    // Transform playlist to match frontend interface
+    const transformedPlaylist = {
+      id: (playlist._id as Types.ObjectId).toString(),
+      name: playlist.name,
+      userId: playlist.userId,
+      songIds: playlist.songIds.map((song: any) => ({
+        id: song._id.toString(),
+        title: song.title,
+        artist: song.artist,
+        mimeType: song.mimeType,
+        createdAt: song.createdAt,
+      })),
+      createdAt: playlist.createdAt,
+      updatedAt: playlist.updatedAt,
+    };
+
+    res.status(200).json({ playlist: transformedPlaylist });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     res.status(500).json({

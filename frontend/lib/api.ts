@@ -209,7 +209,8 @@ export async function getSongs(): Promise<Song[]> {
  */
 export async function getPlaylists(): Promise<Playlist[]> {
   const response = await makeAuthenticatedRequest('/playlists');
-  return parseResponse<Playlist[]>(response);
+  const data = await parseResponse<Playlist[]>(response);
+  return data;
 }
 
 /**

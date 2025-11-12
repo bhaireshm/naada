@@ -221,7 +221,15 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
       
       // Reset playback state
       setCurrentTime(0);
-      setIsPlaying(false);
+      
+      // Auto-play the song once it's ready
+      audioRef.current.addEventListener('canplay', () => {
+        audioRef.current?.play().catch((err) => {
+          console.error('Auto-play error:', err);
+          setError('Failed to play audio');
+          setIsPlaying(false);
+        });
+      }, { once: true });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load song';
       setError(errorMessage);

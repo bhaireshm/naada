@@ -2,7 +2,7 @@ import { Schema, model, Document, Types } from 'mongoose';
 
 export interface IPlaylist extends Document {
   name: string;
-  userId: Types.ObjectId;
+  userId: string; // Firebase UID
   songIds: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -14,8 +14,7 @@ const playlistSchema = new Schema<IPlaylist>({
     required: true,
   },
   userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: String, // Firebase UID
     required: true,
   },
   songIds: [{

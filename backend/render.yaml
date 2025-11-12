@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: online-music-player-backend
+    name: backend
     env: node
     region: oregon
     plan: free
