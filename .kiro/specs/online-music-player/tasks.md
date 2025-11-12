@@ -322,7 +322,6 @@ s: All requirements_
 
 
 
-
   - Create Vercel project from GitHub repository
   - Configure environment variables for API URL and Firebase
   - Enable auto-deploy from main branch
