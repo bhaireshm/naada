@@ -165,7 +165,7 @@
   - _Requirements: 1.4, 2.5, 8.4, 10.4_
 -
 
-- [-] 11. Create Express application entry point
+- [-] 11. Check for existing if its already complted don't do else Create Express application entry point
 
   - Initialize Express app in index.ts
   - Connect to MongoDB on startup
@@ -306,7 +306,8 @@ s: All requirements_
 
 ## Deployment
 
-- [ ] 23. Configure backend deployment on Render
+- [x] 23. Configure backend deployment on Render
+
   - Create Render web service from GitHub repository
   - Configure environment variables for MongoDB, Firebase, and R2
   - Set build command and start command
@@ -315,6 +316,7 @@ s: All requirements_
   - _Requirements: All backend requirements_
 
 - [ ] 24. Configure frontend deployment on Vercel
+
   - Create Vercel project from GitHub repository
   - Configure environment variables for API URL and Firebase
   - Enable auto-deploy from main branch

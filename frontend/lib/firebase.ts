@@ -8,18 +8,34 @@ import {
   User,
   UserCredential,
 } from 'firebase/auth';
-import firebaseConfigJson from '../firebase-config.json';
 
-// Firebase configuration from JSON file
-const firebaseConfig = {
-  apiKey: firebaseConfigJson.apiKey,
-  authDomain: firebaseConfigJson.authDomain,
-  projectId: firebaseConfigJson.projectId,
-  storageBucket: firebaseConfigJson.storageBucket,
-  messagingSenderId: firebaseConfigJson.messagingSenderId,
-  appId: firebaseConfigJson.appId,
-  measurementId: firebaseConfigJson.measurementId,
-};
+// Firebase configuration - use environment variables in production, fallback to JSON in development
+let firebaseConfig;
+
+if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  // Production: Use environment variables
+  firebaseConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  };
+} else {
+  // Development: Use JSON file
+  const firebaseConfigJson = require('../firebase-config.json');
+  firebaseConfig = {
+    apiKey: firebaseConfigJson.apiKey,
+    authDomain: firebaseConfigJson.authDomain,
+    projectId: firebaseConfigJson.projectId,
+    storageBucket: firebaseConfigJson.storageBucket,
+    messagingSenderId: firebaseConfigJson.messagingSenderId,
+    appId: firebaseConfigJson.appId,
+    measurementId: firebaseConfigJson.measurementId,
+  };
+}
 
 // Initialize Firebase app (only once)
 let app: FirebaseApp;
