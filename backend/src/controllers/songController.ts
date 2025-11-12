@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { generateFingerprint, checkDuplicate, FingerprintResult } from '../services/fingerprintService';
-import { uploadFile, getFile } from '../services/storageService';
+import { uploadFile, getFile, fileExists } from '../services/storageService';
 import { Song } from '../models/Song';
 import { randomUUID } from 'crypto';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
@@ -98,15 +98,125 @@ export async function uploadSong(
     // Check for duplicate fingerprint
     const duplicate = await checkDuplicate(fingerprintResult.fingerprint);
     if (duplicate) {
+      // Check if the file still exists in R2
+      const fileStillExists = await fileExists(duplicate.fileKey);
+      
+      if (!fileStillExists) {
+        // File was deleted from R2 but DB entry remains - update the existing record
+        console.log('Duplicate found but file missing in R2, updating existing record...');
+        
+        // Generate new file key
+        const fileExtension = filename.split('.').pop() || 'mp3';
+        const fileKey = `songs/${randomUUID()}.${fileExtension}`;
+        
+        // Prepare custom metadata for R2
+        const r2Metadata: Record<string, string> = {
+          title: mergedMetadata.title,
+          artist: mergedMetadata.artist,
+        };
+        
+        if (mergedMetadata.album) {
+          r2Metadata.album = mergedMetadata.album;
+        }
+        if (mergedMetadata.year) {
+          r2Metadata.year = mergedMetadata.year.toString();
+        }
+        if (mergedMetadata.genre && mergedMetadata.genre.length > 0) {
+          r2Metadata.genre = mergedMetadata.genre.join(', ');
+        }
+        if (extractedMetadata.duration) {
+          r2Metadata.duration = extractedMetadata.duration.toString();
+        }
+        
+        // Upload file to R2
+        console.log('Uploading file to R2...');
+        await uploadFile(fileBuffer, fileKey, mimeType, r2Metadata);
+        
+        // Update existing song record
+        duplicate.title = mergedMetadata.title;
+        duplicate.artist = mergedMetadata.artist;
+        duplicate.album = mergedMetadata.album;
+        duplicate.year = mergedMetadata.year;
+        duplicate.genre = mergedMetadata.genre;
+        duplicate.fileKey = fileKey;
+        duplicate.mimeType = mimeType;
+        
+        await duplicate.save();
+        console.log('Existing song record updated with new file and metadata');
+        
+        res.status(200).json({
+          song: {
+            id: duplicate._id,
+            title: duplicate.title,
+            artist: duplicate.artist,
+            album: duplicate.album,
+            year: duplicate.year,
+            genre: duplicate.genre,
+            mimeType: duplicate.mimeType,
+            createdAt: duplicate.createdAt,
+          },
+          metadata: {
+            extracted: extractedMetadata,
+            merged: mergedMetadata,
+          },
+          updated: true,
+        });
+        return;
+      }
+      
+      // Check if metadata has changed
+      const metadataChanged = 
+        duplicate.title !== mergedMetadata.title ||
+        duplicate.artist !== mergedMetadata.artist ||
+        duplicate.album !== mergedMetadata.album ||
+        duplicate.year !== mergedMetadata.year ||
+        JSON.stringify(duplicate.genre) !== JSON.stringify(mergedMetadata.genre);
+      
+      if (metadataChanged) {
+        // Update metadata only
+        console.log('Duplicate found with different metadata, updating...');
+        duplicate.title = mergedMetadata.title;
+        duplicate.artist = mergedMetadata.artist;
+        duplicate.album = mergedMetadata.album;
+        duplicate.year = mergedMetadata.year;
+        duplicate.genre = mergedMetadata.genre;
+        
+        await duplicate.save();
+        console.log('Song metadata updated');
+        
+        res.status(200).json({
+          song: {
+            id: duplicate._id,
+            title: duplicate.title,
+            artist: duplicate.artist,
+            album: duplicate.album,
+            year: duplicate.year,
+            genre: duplicate.genre,
+            mimeType: duplicate.mimeType,
+            createdAt: duplicate.createdAt,
+          },
+          metadata: {
+            extracted: extractedMetadata,
+            merged: mergedMetadata,
+          },
+          updated: true,
+        });
+        return;
+      }
+      
+      // Exact duplicate - file exists and metadata is the same
       res.status(409).json({
         error: {
           code: 'DUPLICATE_SONG',
-          message: 'This song already exists in the library',
+          message: 'This song already exists in the library with the same metadata',
           details: {
             existingSong: {
               id: duplicate._id,
               title: duplicate.title,
               artist: duplicate.artist,
+              album: duplicate.album,
+              year: duplicate.year,
+              genre: duplicate.genre,
             },
           },
         },

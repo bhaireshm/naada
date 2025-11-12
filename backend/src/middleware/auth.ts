@@ -19,10 +19,21 @@ export async function verifyToken(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Extract token from Authorization header
+    // Extract token from Authorization header or query parameter
     const authHeader = req.headers.authorization;
+    const queryToken = req.query.token as string | undefined;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    let token: string | undefined;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      // Extract the token (remove 'Bearer ' prefix)
+      token = authHeader.substring(7);
+    } else if (queryToken) {
+      // Use token from query parameter (for audio streaming)
+      token = queryToken;
+    }
+
+    if (!token) {
       res.status(401).json({
         error: {
           code: 'AUTH_TOKEN_MISSING',
@@ -31,9 +42,6 @@ export async function verifyToken(
       });
       return;
     }
-
-    // Extract the token (remove 'Bearer ' prefix)
-    const token = authHeader.substring(7);
 
     // Verify token using Firebase Admin SDK
     const decodedToken = await auth.verifyIdToken(token);

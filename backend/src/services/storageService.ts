@@ -79,3 +79,23 @@ export async function getFile(
     throw new Error('Storage retrieval failed: Unknown error');
   }
 }
+
+/**
+ * Check if a file exists in R2 storage
+ * @param key - File key/path in R2
+ * @returns true if file exists, false otherwise
+ */
+export async function fileExists(key: string): Promise<boolean> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+    });
+
+    await r2Client.send(command);
+    return true;
+  } catch (error) {
+    // File doesn't exist or other error
+    return false;
+  }
+}
