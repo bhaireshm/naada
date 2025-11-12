@@ -25,6 +25,7 @@ if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
   };
 } else {
   // Development: Use JSON file
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const firebaseConfigJson = require('../firebase-config.json');
   firebaseConfig = {
     apiKey: firebaseConfigJson.apiKey,

@@ -318,6 +318,10 @@ s: All requirements_
 - [x] 24. Configure frontend deployment on Vercel
 
 
+
+
+
+
   - Create Vercel project from GitHub repository
   - Configure environment variables for API URL and Firebase
   - Enable auto-deploy from main branch
