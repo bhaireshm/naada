@@ -8,12 +8,17 @@ import {
   User,
   UserCredential,
 } from 'firebase/auth';
+import firebaseConfigJson from '../firebase-config.json';
 
-// Firebase configuration from environment variables
+// Firebase configuration from JSON file
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 'demo-api-key',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'demo-project.firebaseapp.com',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project',
+  apiKey: firebaseConfigJson.apiKey,
+  authDomain: firebaseConfigJson.authDomain,
+  projectId: firebaseConfigJson.projectId,
+  storageBucket: firebaseConfigJson.storageBucket,
+  messagingSenderId: firebaseConfigJson.messagingSenderId,
+  appId: firebaseConfigJson.appId,
+  measurementId: firebaseConfigJson.measurementId,
 };
 
 // Initialize Firebase app (only once)

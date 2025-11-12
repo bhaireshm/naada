@@ -1,29 +1,17 @@
 import admin from 'firebase-admin';
+import * as firebaseConfigJson from '../../firebase-config.json';
 
 /**
  * Initialize Firebase Admin SDK
- * Configures service account credentials from environment variables
+ * Configures service account credentials from JSON file
  */
 function initializeFirebase(): admin.app.App {
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-
-  if (!projectId || !privateKey || !clientEmail) {
-    throw new Error(
-      'Missing Firebase configuration. Ensure FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL are set.'
-    );
-  }
-
-  // Replace escaped newlines in private key (common when stored in env vars)
-  const formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
-
   try {
     const app = admin.initializeApp({
       credential: admin.credential.cert({
-        projectId,
-        privateKey: formattedPrivateKey,
-        clientEmail,
+        projectId: firebaseConfigJson.project_id,
+        privateKey: firebaseConfigJson.private_key,
+        clientEmail: firebaseConfigJson.client_email,
       }),
     });
 

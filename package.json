@@ -1,0 +1,23 @@
+{
+  "name": "online-music-player-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Online Music Player - Monorepo",
+  "scripts": {
+    "dev": "concurrently \"pnpm:dev:backend\" \"pnpm:dev:frontend\"",
+    "dev:backend": "pnpm --filter online-music-player-backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm --filter online-music-player-backend build && pnpm --filter frontend build",
+    "build:backend": "pnpm --filter online-music-player-backend build",
+    "build:frontend": "pnpm --filter frontend build",
+    "start": "concurrently \"pnpm:start:backend\" \"pnpm:start:frontend\"",
+    "start:backend": "pnpm --filter online-music-player-backend start",
+    "start:frontend": "pnpm --filter frontend start",
+    "lint": "pnpm --filter online-music-player-backend lint && pnpm --filter frontend lint",
+    "lint:fix": "pnpm --filter online-music-player-backend lint:fix"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

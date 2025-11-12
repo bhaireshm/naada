@@ -1,4 +1,8 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import dotenv from 'dotenv';
+
+// Load environment variables before initializing R2
+dotenv.config();
 
 /**
  * Initialize Cloudflare R2 client using AWS SDK S3 client

@@ -121,7 +121,7 @@ export async function uploadSong(
  * GET /songs
  */
 export async function getAllSongs(
-  req: AuthenticatedRequest,
+  _req: AuthenticatedRequest,
   res: Response
 ): Promise<void> {
   try {
