@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { uploadSong, ApiError } from '@/lib/api';
+import { notifications } from '@mantine/notifications';
 import {
   Modal,
   TextInput,
@@ -105,6 +106,12 @@ export default function UploadModal({
       setFile(null);
       setUploadProgress(0);
 
+      notifications.show({
+        title: 'Success',
+        message: `"${title.trim()}" uploaded successfully`,
+        color: 'green',
+      });
+
       // Call success callback to refresh library
       if (onUploadSuccess) {
         onUploadSuccess();
@@ -113,14 +120,30 @@ export default function UploadModal({
       // Handle errors
       if (err instanceof ApiError) {
         if (err.code === 'DUPLICATE_SONG') {
-          setError(
-            'This song has already been uploaded. Duplicate detected based on audio fingerprint.'
-          );
+          const errorMsg = 'This song has already been uploaded. Duplicate detected based on audio fingerprint.';
+          setError(errorMsg);
+          notifications.show({
+            title: 'Duplicate Song',
+            message: errorMsg,
+            color: 'orange',
+          });
         } else {
-          setError(err.message || 'Failed to upload song. Please try again.');
+          const errorMsg = err.message || 'Failed to upload song. Please try again.';
+          setError(errorMsg);
+          notifications.show({
+            title: 'Upload Failed',
+            message: errorMsg,
+            color: 'red',
+          });
         }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        const errorMsg = 'An unexpected error occurred. Please try again.';
+        setError(errorMsg);
+        notifications.show({
+          title: 'Error',
+          message: errorMsg,
+          color: 'red',
+        });
       }
       setUploadProgress(0);
     } finally {
@@ -144,7 +167,20 @@ export default function UploadModal({
     <Modal
       opened={opened}
       onClose={handleClose}
-      title="Upload Song"
+      title={
+        <Text 
+          fw={700} 
+          size="lg"
+          style={{
+            background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          Upload Song
+        </Text>
+      }
       size="md"
       centered
       closeOnClickOutside={!isUploading}
@@ -162,6 +198,7 @@ export default function UploadModal({
             disabled={isUploading}
             leftSection={<IconUpload size={18} />}
             required
+            size="md"
             description={
               file
                 ? `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`
@@ -177,6 +214,7 @@ export default function UploadModal({
             onChange={(e) => setTitle(e.target.value)}
             disabled={isUploading}
             required
+            size="md"
           />
 
           {/* Artist Input */}
@@ -187,15 +225,22 @@ export default function UploadModal({
             onChange={(e) => setArtist(e.target.value)}
             disabled={isUploading}
             required
+            size="md"
           />
 
           {/* Upload Progress */}
           {isUploading && (
             <Stack gap="xs">
-              <Text size="sm" c="dimmed">
+              <Text size="sm" c="dimmed" fw={500}>
                 Uploading... {uploadProgress}%
               </Text>
-              <Progress value={uploadProgress} animated />
+              <Progress 
+                value={uploadProgress} 
+                animated 
+                color="blue"
+                size="md"
+                radius="md"
+              />
             </Stack>
           )}
 
@@ -206,6 +251,7 @@ export default function UploadModal({
               title="Error"
               color="red"
               variant="light"
+              radius="md"
             >
               {error}
             </Alert>
@@ -218,6 +264,7 @@ export default function UploadModal({
               title="Success"
               color="green"
               variant="light"
+              radius="md"
             >
               Song uploaded successfully!
             </Alert>
@@ -230,6 +277,10 @@ export default function UploadModal({
             loading={isUploading}
             fullWidth
             leftSection={<IconUpload size={18} />}
+            variant="gradient"
+            gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+            size="md"
+            radius="md"
           >
             {isUploading ? 'Uploading...' : 'Upload Song'}
           </Button>

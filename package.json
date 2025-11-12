@@ -1,5 +1,5 @@
 {
-  "name": "online-music-player-monorepo",
+  "name": "@bhaireshm/music-player",
   "version": "1.0.0",
   "private": true,
   "description": "Online Music Player - Monorepo",

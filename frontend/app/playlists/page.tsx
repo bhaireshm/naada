@@ -4,13 +4,36 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPlaylists, createPlaylist, deletePlaylist, Playlist } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { notifications } from '@mantine/notifications';
+import {
+  Container,
+  Title,
+  Button,
+  SimpleGrid,
+  Card,
+  Text,
+  Stack,
+  Alert,
+  Box,
+  Group,
+  Skeleton,
+  Modal,
+  TextInput,
+  ActionIcon,
+} from '@mantine/core';
+import {
+  IconPlaylist,
+  IconPlus,
+  IconAlertCircle,
+  IconTrash,
+} from '@tabler/icons-react';
 
 function PlaylistsPageContent() {
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [creating, setCreating] = useState(false);
 
@@ -42,11 +65,21 @@ function PlaylistsPageContent() {
     try {
       await createPlaylist(newPlaylistName.trim());
       setNewPlaylistName('');
-      setShowCreateForm(false);
+      setShowCreateModal(false);
       await fetchPlaylists();
+      
+      notifications.show({
+        title: 'Success',
+        message: `Playlist "${newPlaylistName.trim()}" created successfully`,
+        color: 'green',
+      });
     } catch (err) {
       console.error('Error creating playlist:', err);
-      alert('Failed to create playlist');
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to create playlist. Please try again.',
+        color: 'red',
+      });
     } finally {
       setCreating(false);
     }
@@ -58,9 +91,19 @@ function PlaylistsPageContent() {
     try {
       await deletePlaylist(playlistId);
       await fetchPlaylists();
+      
+      notifications.show({
+        title: 'Success',
+        message: 'Playlist deleted successfully',
+        color: 'green',
+      });
     } catch (err) {
       console.error('Error deleting playlist:', err);
-      alert('Failed to delete playlist');
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to delete playlist. Please try again.',
+        color: 'red',
+      });
     }
   };
 
@@ -69,131 +112,262 @@ function PlaylistsPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">My Playlists</h1>
-            <button
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+    <Box pb={80}>
+      <Container size="xl" py="xl">
+        {/* Header */}
+        <Group justify="space-between" align="center" mb="lg">
+          <div>
+            <Title 
+              order={1}
+              style={{
+                background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+              }}
             >
-              {showCreateForm ? 'Cancel' : 'Create Playlist'}
-            </button>
+              My Playlists
+            </Title>
+            <Text c="dimmed" size="sm">
+              {playlists.length} {playlists.length === 1 ? 'playlist' : 'playlists'}
+            </Text>
           </div>
-        </div>
-      </header>
+          <Button
+            leftSection={<IconPlus size={16} />}
+            onClick={() => setShowCreateModal(true)}
+            variant="gradient"
+            gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+            size="sm"
+          >
+            New Playlist
+          </Button>
+        </Group>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showCreateForm && (
-          <div className="mb-8 bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Playlist</h2>
-            <form onSubmit={handleCreatePlaylist} className="flex gap-4">
-              <input
-                type="text"
-                value={newPlaylistName}
-                onChange={(e) => setNewPlaylistName(e.target.value)}
-                placeholder="Playlist name"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={creating}
-              />
-              <button
-                type="submit"
-                disabled={creating || !newPlaylistName.trim()}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                {creating ? 'Creating...' : 'Create'}
-              </button>
-            </form>
-          </div>
-        )}
-
+        {/* Loading State */}
         {loading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
+          <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
+            <Skeleton height={150} radius="md" />
+            <Skeleton height={150} radius="md" />
+            <Skeleton height={150} radius="md" />
+          </SimpleGrid>
         )}
 
+        {/* Error State */}
         {error && !loading && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            <p>{error}</p>
-            <button
-              onClick={fetchPlaylists}
-              className="mt-2 text-sm underline hover:no-underline"
-            >
+          <Alert
+            icon={<IconAlertCircle size={18} />}
+            title="Error"
+            color="red"
+            variant="light"
+          >
+            <Text size="sm" mb="xs">
+              {error}
+            </Text>
+            <Button size="xs" variant="outline" onClick={fetchPlaylists}>
               Try again
-            </button>
-          </div>
+            </Button>
+          </Alert>
         )}
 
+        {/* Empty State */}
         {!loading && !error && playlists.length === 0 && (
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No playlists</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Get started by creating your first playlist.
-            </p>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
-            >
-              Create Playlist
-            </button>
-          </div>
+          <Card
+            shadow="sm"
+            padding="lg"
+            radius="md"
+            style={{
+              background: 'white',
+              border: '1px solid rgba(189, 195, 199, 0.2)',
+            }}
+          >
+            <Stack align="center" gap="md" py={40}>
+              <Box
+                style={{
+                  background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+                  borderRadius: '50%',
+                  padding: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <IconPlaylist size={32} stroke={1.5} color="white" />
+              </Box>
+              <Stack gap="xs" align="center">
+                <Text size="lg" fw={600}>
+                  No playlists yet
+                </Text>
+                <Text c="dimmed" size="sm" ta="center" maw={350}>
+                  Create your first playlist to organize your favorite songs.
+                </Text>
+              </Stack>
+              <Button
+                leftSection={<IconPlus size={16} />}
+                onClick={() => setShowCreateModal(true)}
+                variant="gradient"
+                gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+                size="sm"
+              >
+                Create Playlist
+              </Button>
+            </Stack>
+          </Card>
         )}
 
+        {/* Playlist Grid */}
         {!loading && !error && playlists.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="md">
             {playlists.map((playlist) => {
               const songCount = Array.isArray(playlist.songIds) ? playlist.songIds.length : 0;
               
               return (
-                <div
+                <Card
                   key={playlist.id}
-                  className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                  shadow="sm"
+                  padding="md"
+                  radius="md"
+                  style={{
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    background: 'white',
+                    border: '1px solid rgba(189, 195, 199, 0.2)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(1, 31, 75, 0.1)';
+                    e.currentTarget.style.borderColor = '#011f4b';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'var(--mantine-shadow-sm)';
+                    e.currentTarget.style.borderColor = 'rgba(189, 195, 199, 0.2)';
+                  }}
+                  onClick={() => handleViewPlaylist(playlist.id)}
                 >
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 truncate">
-                      {playlist.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-4">
-                      {songCount} {songCount === 1 ? 'song' : 'songs'}
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewPlaylist(playlist.id)}
-                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors"
+                  <Stack gap="sm">
+                    <Group gap="sm" wrap="nowrap">
+                      <Box
+                        style={{
+                          background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+                          borderRadius: '8px',
+                          padding: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '44px',
+                          height: '44px',
+                        }}
                       >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleDeletePlaylist(playlist.id)}
-                        className="px-4 py-2 bg-red-100 text-red-600 rounded-md font-semibold hover:bg-red-200 transition-colors"
+                        <IconPlaylist size={24} stroke={1.5} color="white" />
+                      </Box>
+                      <Box style={{ flex: 1, minWidth: 0 }}>
+                        <Text size="sm" fw={600} lineClamp={1}>
+                          {playlist.name}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {songCount} {songCount === 1 ? 'song' : 'songs'}
+                        </Text>
+                      </Box>
+                    </Group>
+                    <Group gap="xs" wrap="nowrap">
+                      <Button
+                        flex={1}
+                        size="xs"
+                        variant="light"
+                        color="deepBlue"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewPlaylist(playlist.id);
+                        }}
+                      >
+                        Open
+                      </Button>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        size={32}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePlaylist(playlist.id);
+                        }}
                         aria-label="Delete playlist"
                       >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Group>
+                  </Stack>
+                </Card>
               );
             })}
-          </div>
+          </SimpleGrid>
         )}
-      </main>
-    </div>
+      </Container>
+
+      {/* Create Playlist Modal */}
+      <Modal
+        opened={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setNewPlaylistName('');
+        }}
+        title={
+          <Text 
+            fw={600} 
+            size="md"
+            style={{
+              background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            Create Playlist
+          </Text>
+        }
+        centered
+        size="sm"
+        padding="md"
+      >
+        <form onSubmit={handleCreatePlaylist}>
+          <Stack gap="sm">
+            <TextInput
+              label="Name"
+              placeholder="My Playlist"
+              value={newPlaylistName}
+              onChange={(e) => setNewPlaylistName(e.target.value)}
+              disabled={creating}
+              required
+              data-autofocus
+              size="sm"
+            />
+            <Group justify="flex-end" gap="xs">
+              <Button
+                variant="subtle"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewPlaylistName('');
+                }}
+                disabled={creating}
+                size="xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                loading={creating}
+                disabled={!newPlaylistName.trim()}
+                variant="gradient"
+                gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+                size="xs"
+              >
+                Create
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Modal>
+    </Box>
   );
 }
 

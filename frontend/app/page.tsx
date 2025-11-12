@@ -55,7 +55,7 @@ export default function Home() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: theme.other?.gradient || 'linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-indigo-1) 100%)',
+        background: theme.other?.gradient || 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
         padding: 'var(--mantine-spacing-md)',
       })}
     >
@@ -66,13 +66,15 @@ export default function Home() {
               order={1}
               size="3.5rem"
               ta="center"
+              c="white"
               style={{
                 fontSize: 'clamp(2.5rem, 5vw, 3.5rem)',
+                textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
               }}
             >
               Welcome to Music Player
             </Title>
-            <Text size="xl" c="dimmed" ta="center" maw={600}>
+            <Text size="xl" c="silver.4" ta="center" maw={600}>
               Upload, organize, and stream your music collection from anywhere
             </Text>
           </Stack>
@@ -81,65 +83,93 @@ export default function Home() {
             shadow="xl"
             padding="xl"
             radius="lg"
-            style={{ width: '100%' }}
+            style={{
+              width: '100%',
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+            }}
           >
             <Stack gap="xl">
               <SimpleGrid
                 cols={{ base: 1, sm: 3 }}
                 spacing="lg"
               >
-                <Card padding="lg" radius="md" withBorder>
+                <Card 
+                  padding="lg" 
+                  radius="md" 
+                  style={{
+                    background: 'linear-gradient(135deg, #0056e6 0%, #34495e 100%)',
+                    border: 'none',
+                    color: 'white',
+                  }}
+                >
                   <Stack align="center" gap="md">
                     <ThemeIcon
                       size={64}
                       radius="xl"
-                      variant="light"
-                      color="blue"
+                      variant="white"
+                      color="deepBlue"
                     >
                       <IconUpload size={32} />
                     </ThemeIcon>
-                    <Title order={3} size="h4" ta="center">
+                    <Title order={3} size="h4" ta="center" c="white">
                       Upload Your Music
                     </Title>
-                    <Text size="sm" c="dimmed" ta="center">
+                    <Text size="sm" c="silver.4" ta="center">
                       Upload your favorite songs with automatic duplicate detection
                     </Text>
                   </Stack>
                 </Card>
 
-                <Card padding="lg" radius="md" withBorder>
+                <Card 
+                  padding="lg" 
+                  radius="md"
+                  style={{
+                    background: 'linear-gradient(135deg, #1a75ff 0%, #7f8c8d 100%)',
+                    border: 'none',
+                    color: 'white',
+                  }}
+                >
                   <Stack align="center" gap="md">
                     <ThemeIcon
                       size={64}
                       radius="xl"
-                      variant="light"
-                      color="violet"
+                      variant="white"
+                      color="deepBlue"
                     >
                       <IconPlaylist size={32} />
                     </ThemeIcon>
-                    <Title order={3} size="h4" ta="center">
+                    <Title order={3} size="h4" ta="center" c="white">
                       Create Playlists
                     </Title>
-                    <Text size="sm" c="dimmed" ta="center">
+                    <Text size="sm" c="silver.4" ta="center">
                       Organize your music into custom playlists
                     </Text>
                   </Stack>
                 </Card>
 
-                <Card padding="lg" radius="md" withBorder>
+                <Card 
+                  padding="lg" 
+                  radius="md"
+                  style={{
+                    background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+                    border: 'none',
+                    color: 'white',
+                  }}
+                >
                   <Stack align="center" gap="md">
                     <ThemeIcon
                       size={64}
                       radius="xl"
-                      variant="light"
-                      color="teal"
+                      variant="white"
+                      color="slate"
                     >
                       <IconMusic size={32} />
                     </ThemeIcon>
-                    <Title order={3} size="h4" ta="center">
+                    <Title order={3} size="h4" ta="center" c="white">
                       Stream Anywhere
                     </Title>
-                    <Text size="sm" c="dimmed" ta="center">
+                    <Text size="sm" c="silver.4" ta="center">
                       Listen to your music from any device
                     </Text>
                   </Stack>
@@ -152,6 +182,9 @@ export default function Home() {
                   href="/register"
                   size="lg"
                   radius="md"
+                  color="deepBlue"
+                  variant="gradient"
+                  gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
                 >
                   Get Started
                 </Button>
@@ -160,7 +193,8 @@ export default function Home() {
                   href="/login"
                   size="lg"
                   radius="md"
-                  variant="default"
+                  variant="outline"
+                  color="deepBlue"
                 >
                   Sign In
                 </Button>
@@ -168,7 +202,7 @@ export default function Home() {
             </Stack>
           </Card>
 
-          <Text size="sm" c="dimmed">
+          <Text size="sm" c="silver.4">
             Secure authentication powered by Firebase
           </Text>
         </Stack>

@@ -2,17 +2,16 @@
 
 import { useAudioPlayerContext } from '@/contexts/AudioPlayerContext';
 import { Song } from '@/lib/api';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Group,
-  Stack,
   ActionIcon,
   Slider,
   Text,
   Image,
   Box,
-  Collapse,
 } from '@mantine/core';
+import { GRADIENTS, BORDERS } from '@/lib/theme-constants';
 import {
   IconPlayerPlay,
   IconPlayerPause,
@@ -37,7 +36,6 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     duration,
     volume,
     loading,
-    error,
     queue,
     currentIndex,
     play,
@@ -49,7 +47,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     previous,
   } = useAudioPlayerContext();
 
-  const [volumeOpen, setVolumeOpen] = useState(false);
+
 
   // Load song when prop changes
   useEffect(() => {
@@ -65,13 +63,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     }
   }, [currentSong, onSongChange]);
 
-  const formatTime = (timeInSeconds: number): string => {
-    if (!isFinite(timeInSeconds)) return '0:00';
-    
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+
 
   const togglePlayPause = () => {
     if (isPlaying) {
@@ -99,17 +91,19 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 100,
-          backgroundColor: 'var(--mantine-color-dark-7)',
-          borderTop: '1px solid var(--mantine-color-dark-5)',
+          height: 64,
+          background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(0, 0, 0, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 100,
+          boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.05)',
         }}
       >
         <Text c="dimmed" size="sm">
-          No song selected
+          No song playing
         </Text>
       </Box>
     );
@@ -122,20 +116,15 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 100,
-        backgroundColor: 'var(--mantine-color-dark-7)',
-        borderTop: '1px solid var(--mantine-color-dark-5)',
-        padding: '12px 16px',
+        height: 64,
+        background: 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+        padding: '8px 20px',
         zIndex: 100,
+        boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.05)',
       }}
     >
-      {/* Error message */}
-      {error && (
-        <Text c="red" size="xs" ta="center" mb="xs">
-          {error}
-        </Text>
-      )}
-
       {/* Desktop Layout */}
       <Group
         justify="space-between"
@@ -143,100 +132,153 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
         h="100%"
         visibleFrom="md"
         wrap="nowrap"
+        gap="lg"
       >
         {/* Left: Album Art and Song Info */}
-        <Group gap="md" style={{ minWidth: 0, flex: '0 0 300px' }}>
-          <Image
-            src={currentSong.albumArt || null}
-            alt={currentSong.title}
-            w={60}
-            h={60}
-            radius="md"
-            fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23374151'/%3E%3Cpath d='M20 15v30l20-15z' fill='%239CA3AF'/%3E%3C/svg%3E"
-          />
+        <Group gap="xs" style={{ minWidth: 0, flex: '0 0 200px' }}>
+          <Box
+            style={{
+              position: 'relative',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <Image
+              src={currentSong.albumArt || null}
+              alt={currentSong.title}
+              w={40}
+              h={40}
+              radius="sm"
+              fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23e0e0e0'/%3E%3Cpath d='M14 10v20l14-10z' fill='%23999'/%3E%3C/svg%3E"
+            />
+          </Box>
           <Box style={{ minWidth: 0, flex: 1 }}>
-            <Text size="sm" fw={600} truncate c="white">
+            <Text size="sm" fw={600} truncate style={{ color: '#1a1a1a', fontSize: '13px' }}>
               {currentSong.title}
             </Text>
-            <Text size="xs" c="dimmed" truncate>
+            <Text size="xs" truncate style={{ color: '#666', fontSize: '11px' }}>
               {currentSong.artist}
             </Text>
           </Box>
         </Group>
 
         {/* Center: Playback Controls */}
-        <Stack gap="xs" style={{ flex: '1 1 auto', maxWidth: 600 }}>
-          <Group justify="center" gap="xs">
+        <Box style={{ flex: '1 1 auto', maxWidth: 600 }}>
+          <Group gap="xs" justify="center" mb={4}>
             <ActionIcon
-              variant="subtle"
+              variant="light"
               color="gray"
-              size="lg"
+              size={32}
+              radius="md"
               onClick={previous}
               disabled={!hasPrevious}
               aria-label="Previous song"
+              styles={{
+                root: {
+                  border: '1px solid rgba(0, 0, 0, 0.08)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                    borderColor: 'rgba(0, 0, 0, 0.12)',
+                  },
+                  transition: 'all 0.2s ease',
+                },
+              }}
             >
-              <IconPlayerSkipBack size={20} />
+              <IconPlayerSkipBack size={16} stroke={2} />
             </ActionIcon>
 
             <ActionIcon
-              variant="filled"
-              color="blue"
-              size="xl"
+              variant="gradient"
+              gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+              size={38}
               radius="xl"
               onClick={togglePlayPause}
               disabled={loading}
               loading={loading}
               aria-label={isPlaying ? 'Pause' : 'Play'}
+              styles={{
+                root: {
+                  boxShadow: '0 3px 10px rgba(1, 31, 75, 0.2)',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 4px 12px rgba(1, 31, 75, 0.25)',
+                  },
+                  transition: 'all 0.2s ease',
+                },
+              }}
             >
               {isPlaying ? (
-                <IconPlayerPause size={24} />
+                <IconPlayerPause size={18} stroke={2.5} />
               ) : (
-                <IconPlayerPlay size={24} />
+                <IconPlayerPlay size={18} stroke={2.5} style={{ marginLeft: '2px' }} />
               )}
             </ActionIcon>
 
             <ActionIcon
-              variant="subtle"
+              variant="light"
               color="gray"
-              size="lg"
+              size={32}
+              radius="md"
               onClick={next}
               disabled={!hasNext}
               aria-label="Next song"
+              styles={{
+                root: {
+                  border: '1px solid rgba(0, 0, 0, 0.08)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                    borderColor: 'rgba(0, 0, 0, 0.12)',
+                  },
+                  transition: 'all 0.2s ease',
+                },
+              }}
             >
-              <IconPlayerSkipForward size={20} />
+              <IconPlayerSkipForward size={16} stroke={2} />
             </ActionIcon>
           </Group>
 
-          <Group gap="xs" align="center">
-            <Text size="xs" c="dimmed" style={{ minWidth: 40, textAlign: 'right' }}>
-              {formatTime(currentTime)}
-            </Text>
-            <Slider
-              value={currentTime}
-              onChange={seek}
-              max={duration || 0}
-              min={0}
-              disabled={loading || !duration}
-              style={{ flex: 1 }}
-              size="sm"
-              color="blue"
-            />
-            <Text size="xs" c="dimmed" style={{ minWidth: 40 }}>
-              {formatTime(duration)}
-            </Text>
-          </Group>
-        </Stack>
+          <Slider
+            value={currentTime}
+            onChange={seek}
+            max={duration || 0}
+            min={0}
+            disabled={loading || !duration}
+            style={{ width: '100%' }}
+            size="xs"
+            styles={{
+              thumb: {
+                borderWidth: 2,
+                padding: 3,
+              },
+              track: {
+                '&::before': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                },
+              },
+            }}
+          />
+        </Box>
 
         {/* Right: Volume Control */}
-        <Group gap="xs" style={{ flex: '0 0 150px' }} justify="flex-end">
+        <Group gap="xs" style={{ flex: '0 0 90px' }} justify="flex-end">
           <ActionIcon
-            variant="subtle"
+            variant="light"
             color="gray"
-            size="md"
+            size={28}
+            radius="md"
             onClick={() => setVolume(volume === 0 ? 1 : 0)}
             aria-label="Toggle mute"
+            styles={{
+              root: {
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                },
+              },
+            }}
           >
-            {renderVolumeIcon(20)}
+            {renderVolumeIcon(14)}
           </ActionIcon>
           <Slider
             value={volume}
@@ -244,136 +286,119 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             max={1}
             min={0}
             step={0.01}
-            style={{ width: 100 }}
-            size="sm"
-            color="blue"
+            style={{ width: 55 }}
+            size="xs"
             aria-label="Volume"
+            styles={{
+              thumb: {
+                borderWidth: 2,
+                padding: 2,
+              },
+              track: {
+                '&::before': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                },
+              },
+            }}
           />
         </Group>
       </Group>
 
       {/* Mobile Layout */}
-      <Stack gap="xs" hiddenFrom="md" h="100%">
-        <Group justify="space-between" align="center" wrap="nowrap">
-          {/* Album Art and Song Info */}
-          <Group gap="sm" style={{ minWidth: 0, flex: 1 }}>
+      <Group justify="space-between" align="center" hiddenFrom="md" h="100%" wrap="nowrap">
+        {/* Album Art and Song Info */}
+        <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
+          <Box
+            style={{
+              borderRadius: '4px',
+              overflow: 'hidden',
+              boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          >
             <Image
               src={currentSong.albumArt || null}
               alt={currentSong.title}
-              w={48}
-              h={48}
-              radius="md"
-              fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23374151'/%3E%3Cpath d='M16 12v24l16-12z' fill='%239CA3AF'/%3E%3C/svg%3E"
+              w={36}
+              h={36}
+              radius="sm"
+              fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' fill='%23e0e0e0'/%3E%3Cpath d='M12 9v18l13-9z' fill='%23999'/%3E%3C/svg%3E"
             />
-            <Box style={{ minWidth: 0, flex: 1 }}>
-              <Text size="sm" fw={600} truncate c="white">
-                {currentSong.title}
-              </Text>
-              <Text size="xs" c="dimmed" truncate>
-                {currentSong.artist}
-              </Text>
-            </Box>
-          </Group>
-
-          {/* Playback Controls */}
-          <Group gap={4}>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="md"
-              onClick={previous}
-              disabled={!hasPrevious}
-              aria-label="Previous song"
-            >
-              <IconPlayerSkipBack size={18} />
-            </ActionIcon>
-
-            <ActionIcon
-              variant="filled"
-              color="blue"
-              size="lg"
-              radius="xl"
-              onClick={togglePlayPause}
-              disabled={loading}
-              loading={loading}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {isPlaying ? (
-                <IconPlayerPause size={20} />
-              ) : (
-                <IconPlayerPlay size={20} />
-              )}
-            </ActionIcon>
-
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="md"
-              onClick={next}
-              disabled={!hasNext}
-              aria-label="Next song"
-            >
-              <IconPlayerSkipForward size={18} />
-            </ActionIcon>
-
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="md"
-              onClick={() => setVolumeOpen(!volumeOpen)}
-              aria-label="Toggle volume"
-            >
-              {renderVolumeIcon(18)}
-            </ActionIcon>
-          </Group>
+          </Box>
+          <Box style={{ minWidth: 0, flex: 1 }}>
+            <Text size="xs" fw={600} truncate style={{ color: '#1a1a1a', fontSize: '12px' }}>
+              {currentSong.title}
+            </Text>
+            <Text size="xs" truncate style={{ fontSize: '10px', color: '#666' }}>
+              {currentSong.artist}
+            </Text>
+          </Box>
         </Group>
 
-        {/* Seek bar */}
-        <Group gap="xs" align="center">
-          <Text size="xs" c="dimmed" style={{ minWidth: 35, textAlign: 'right' }}>
-            {formatTime(currentTime)}
-          </Text>
-          <Slider
-            value={currentTime}
-            onChange={seek}
-            max={duration || 0}
-            min={0}
-            disabled={loading || !duration}
-            style={{ flex: 1 }}
-            size="xs"
-            color="blue"
-          />
-          <Text size="xs" c="dimmed" style={{ minWidth: 35 }}>
-            {formatTime(duration)}
-          </Text>
-        </Group>
+        {/* Playback Controls */}
+        <Group gap={4}>
+          <ActionIcon
+            variant="light"
+            color="gray"
+            size={32}
+            radius="md"
+            onClick={previous}
+            disabled={!hasPrevious}
+            aria-label="Previous song"
+            styles={{
+              root: {
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                },
+              },
+            }}
+          >
+            <IconPlayerSkipBack size={14} stroke={2} />
+          </ActionIcon>
 
-        {/* Collapsible Volume Control */}
-        <Collapse in={volumeOpen}>
-          <Group gap="xs" align="center" mt={4}>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="sm"
-              onClick={() => setVolume(volume === 0 ? 1 : 0)}
-              aria-label="Toggle mute"
-            >
-              {renderVolumeIcon(16)}
-            </ActionIcon>
-            <Slider
-              value={volume}
-              onChange={setVolume}
-              max={1}
-              min={0}
-              step={0.01}
-              style={{ flex: 1 }}
-              size="xs"
-              color="blue"
-              aria-label="Volume"
-            />
-          </Group>
-        </Collapse>
-      </Stack>
+          <ActionIcon
+            variant="gradient"
+            gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+            size={38}
+            radius="xl"
+            onClick={togglePlayPause}
+            disabled={loading}
+            loading={loading}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+            styles={{
+              root: {
+                boxShadow: '0 2px 8px rgba(1, 31, 75, 0.2)',
+              },
+            }}
+          >
+            {isPlaying ? (
+              <IconPlayerPause size={18} stroke={2.5} />
+            ) : (
+              <IconPlayerPlay size={18} stroke={2.5} style={{ marginLeft: '2px' }} />
+            )}
+          </ActionIcon>
+
+          <ActionIcon
+            variant="light"
+            color="gray"
+            size={32}
+            radius="md"
+            onClick={next}
+            disabled={!hasNext}
+            aria-label="Next song"
+            styles={{
+              root: {
+                border: '1px solid rgba(0, 0, 0, 0.08)',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.06)',
+                },
+              },
+            }}
+          >
+            <IconPlayerSkipForward size={14} stroke={2} />
+          </ActionIcon>
+        </Group>
+      </Group>
     </Box>
   );
 }

@@ -31,6 +31,7 @@ import {
   IconAlertCircle,
 } from '@tabler/icons-react';
 import PlayingAnimation from '@/components/PlayingAnimation';
+import { GRADIENTS, BORDERS } from '@/lib/theme-constants';
 
 function LibraryPageContent() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -95,18 +96,47 @@ function LibraryPageContent() {
   };
 
   return (
-    <Box pb={120}>
+    <Box pb={80}>
       <Container size="xl" py="xl">
         {/* Header */}
-        <Group justify="space-between" mb="xl">
-          <Title order={1}>My Library</Title>
-          <Button
-            leftSection={<IconUpload size={18} />}
-            onClick={() => setShowUploadModal(true)}
-          >
-            Upload Song
-          </Button>
-        </Group>
+        <Box
+          mb="xl"
+          p="xl"
+          style={{
+            background: GRADIENTS.pastelBlue,
+            borderRadius: 'var(--mantine-radius-md)',
+            boxShadow: '0 4px 20px rgba(1, 31, 75, 0.08)',
+          }}
+        >
+          <Group justify="space-between" align="center">
+            <Stack gap="xs">
+              <Title 
+                order={1}
+                style={{
+                  background: GRADIENTS.primary,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
+                }}
+              >
+                My Library
+              </Title>
+              <Text c="dimmed" size="sm">
+                Your personal music collection
+              </Text>
+            </Stack>
+            <Button
+              leftSection={<IconUpload size={18} />}
+              onClick={() => setShowUploadModal(true)}
+              variant="gradient"
+              gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
+              size="md"
+            >
+              Upload Song
+            </Button>
+          </Group>
+        </Box>
 
         {/* Loading State */}
         {loading && (
@@ -137,21 +167,43 @@ function LibraryPageContent() {
 
         {/* Empty State */}
         {!loading && !error && songs.length === 0 && (
-          <Stack align="center" gap="md" py={60}>
-            <IconMusic size={48} stroke={1.5} color="var(--mantine-color-gray-5)" />
-            <Title order={3} c="dimmed">
-              No songs
-            </Title>
-            <Text c="dimmed" size="sm">
-              Get started by uploading your first song.
-            </Text>
-            <Button
-              leftSection={<IconUpload size={18} />}
-              onClick={() => setShowUploadModal(true)}
-            >
-              Upload Song
-            </Button>
-          </Stack>
+          <Box
+            p="xl"
+            style={{
+              background: GRADIENTS.pastelPink,
+              borderRadius: 'var(--mantine-radius-md)',
+            }}
+          >
+            <Stack align="center" gap="md" py={60}>
+              <Box
+                style={{
+                  background: GRADIENTS.pinkAccent,
+                  borderRadius: '50%',
+                  padding: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <IconMusic size={48} stroke={1.5} color="white" />
+              </Box>
+              <Title order={3}>
+                No songs yet
+              </Title>
+              <Text c="dimmed" size="sm" ta="center" maw={400}>
+                Get started by uploading your first song to build your library.
+              </Text>
+              <Button
+                leftSection={<IconUpload size={18} />}
+                onClick={() => setShowUploadModal(true)}
+                variant="gradient"
+                gradient={{ from: 'pink.6', to: 'red.6', deg: 135 }}
+                size="md"
+              >
+                Upload Your First Song
+              </Button>
+            </Stack>
+          </Box>
         )}
 
         {/* Song List - Desktop Table */}
@@ -206,16 +258,17 @@ function LibraryPageContent() {
                               <IconPlayerPlay size={18} />
                             )}
                           </ActionIcon>
-                          <Menu position="bottom-end" shadow="md">
+                          <Menu position="bottom-end" shadow="sm" width={160}>
                             <Menu.Target>
-                              <ActionIcon variant="subtle" color="gray">
-                                <IconDots size={18} />
+                              <ActionIcon variant="subtle" color="gray" size={36}>
+                                <IconDots size={16} />
                               </ActionIcon>
                             </Menu.Target>
-                            <Menu.Dropdown>
+                            <Menu.Dropdown p={4}>
                               <Menu.Item
-                                leftSection={<IconPlayerPlay size={16} />}
+                                leftSection={<IconPlayerPlay size={14} />}
                                 onClick={() => handlePlaySong(song, index)}
+                                style={{ fontSize: '13px', padding: '6px 8px' }}
                               >
                                 Play
                               </Menu.Item>
@@ -226,7 +279,10 @@ function LibraryPageContent() {
                                 withArrow
                               >
                                 <Menu.Target>
-                                  <Menu.Item leftSection={<IconPlaylistAdd size={16} />}>
+                                  <Menu.Item 
+                                    leftSection={<IconPlaylistAdd size={14} />}
+                                    style={{ fontSize: '13px', padding: '6px 8px' }}
+                                  >
                                     Add to Playlist
                                   </Menu.Item>
                                 </Menu.Target>
@@ -236,10 +292,11 @@ function LibraryPageContent() {
                                 />
                               </Menu>
                               <Menu.Item
-                                leftSection={<IconInfoCircle size={16} />}
+                                leftSection={<IconInfoCircle size={14} />}
                                 onClick={() => handleSongDetails(song.id)}
+                                style={{ fontSize: '13px', padding: '6px 8px' }}
                               >
-                                Song Details
+                                Details
                               </Menu.Item>
                             </Menu.Dropdown>
                           </Menu>
@@ -258,12 +315,15 @@ function LibraryPageContent() {
                   key={song.id}
                   p="md"
                   style={{
-                    backgroundColor:
+                    background:
                       audioCurrentSong?.id === song.id
-                        ? 'var(--mantine-color-blue-light)'
-                        : 'var(--mantine-color-body)',
+                        ? GRADIENTS.pastelLight
+                        : GRADIENTS.subtleGray,
                     borderRadius: 'var(--mantine-radius-md)',
-                    border: '1px solid var(--mantine-color-default-border)',
+                    border: audioCurrentSong?.id === song.id 
+                      ? `1px solid ${BORDERS.activeBlue}` 
+                      : `1px solid ${BORDERS.light}`,
+                    transition: 'all 0.2s ease',
                   }}
                 >
                   <Group justify="space-between" wrap="nowrap">
@@ -282,26 +342,27 @@ function LibraryPageContent() {
                       <ActionIcon
                         variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
                         color="blue"
-                        size="lg"
+                        size={44}
                         onClick={() => handlePlaySong(song, index)}
                         aria-label={`Play ${song.title}`}
                       >
                         {audioCurrentSong?.id === song.id && isPlaying ? (
-                          <PlayingAnimation size={20} color="white" />
+                          <PlayingAnimation size={22} color="white" />
                         ) : (
-                          <IconPlayerPlay size={20} />
+                          <IconPlayerPlay size={22} />
                         )}
                       </ActionIcon>
-                      <Menu position="bottom-end" shadow="md">
+                      <Menu position="bottom-end" shadow="sm" width={160}>
                         <Menu.Target>
-                          <ActionIcon variant="subtle" color="gray" size="lg">
-                            <IconDots size={20} />
+                          <ActionIcon variant="subtle" color="gray" size={40}>
+                            <IconDots size={18} />
                           </ActionIcon>
                         </Menu.Target>
-                        <Menu.Dropdown>
+                        <Menu.Dropdown p={4}>
                           <Menu.Item
-                            leftSection={<IconPlayerPlay size={16} />}
+                            leftSection={<IconPlayerPlay size={14} />}
                             onClick={() => handlePlaySong(song, index)}
+                            style={{ fontSize: '13px', padding: '6px 8px' }}
                           >
                             Play
                           </Menu.Item>
@@ -312,7 +373,10 @@ function LibraryPageContent() {
                             withArrow
                           >
                             <Menu.Target>
-                              <Menu.Item leftSection={<IconPlaylistAdd size={16} />}>
+                              <Menu.Item 
+                                leftSection={<IconPlaylistAdd size={14} />}
+                                style={{ fontSize: '13px', padding: '6px 8px' }}
+                              >
                                 Add to Playlist
                               </Menu.Item>
                             </Menu.Target>
@@ -322,10 +386,11 @@ function LibraryPageContent() {
                             />
                           </Menu>
                           <Menu.Item
-                            leftSection={<IconInfoCircle size={16} />}
+                            leftSection={<IconInfoCircle size={14} />}
                             onClick={() => handleSongDetails(song.id)}
+                            style={{ fontSize: '13px', padding: '6px 8px' }}
                           >
-                            Song Details
+                            Details
                           </Menu.Item>
                         </Menu.Dropdown>
                       </Menu>

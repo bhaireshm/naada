@@ -16,7 +16,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <GlobalAudioPlayerProvider>
         <AppShell 
           header={{ height: 60 }} 
-          footer={{ height: 100 }}
+          footer={{ height: 64 }}
           padding="md"
         >
           <AppShell.Header>

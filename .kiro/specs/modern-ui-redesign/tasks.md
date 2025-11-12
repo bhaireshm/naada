@@ -48,10 +48,6 @@
 
 - [x] 6. Redesign authentication pages with Mantine
 
-
-
-
-
 - [x] 6.1 Redesign login page
 
   - Replace Tailwind classes with Mantine Paper, TextInput, PasswordInput, Button
@@ -59,7 +55,6 @@
   - Add form validation using Mantine form utilities
   - Implement responsive layout (max-width on desktop, full-width on mobile)
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 3.1, 9.2_
-
 
 - [x] 6.2 Redesign registration page
 
@@ -72,9 +67,6 @@
 
 - [x] 7. Create AddToPlaylistMenu component
 
-
-
-
   - Create new component using Mantine Menu component
   - Fetch and display list of user's playlists in Menu.Dropdown
   - Implement "Create Playlist" option that opens a modal
@@ -83,11 +75,7 @@
   - Enforce 25 playlist limit per user
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-
 - [x] 8. Redesign Library page with Mantine
-
-
-
 
   - Replace Tailwind classes with Mantine components (Container, Title, Button, Table)
   - Use Table component for song list on desktop, Stack for mobile
@@ -98,7 +86,8 @@
   - Update queue when playing song from library
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.4, 3.1, 3.2, 6.1, 8.1, 8.2, 8.3, 8.4, 9.4_
 
-- [ ] 9. Redesign Playlists page with Mantine
+- [x] 9. Redesign Playlists page with Mantine
+
   - Replace Tailwind classes with Mantine SimpleGrid, Card, Text, Button
   - Implement responsive grid (3 columns desktop, 1 column mobile)
   - Convert create playlist form to Modal component
@@ -106,7 +95,8 @@
   - Add loading states with Skeleton component
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 3.1, 3.2, 9.5_
 
-- [ ] 10. Redesign Playlist detail page with Mantine
+- [x] 10. Redesign Playlist detail page with Mantine
+
   - Replace Tailwind classes with Mantine components
   - Add playlist header with name, song count, and "Play All" button
   - Use Table component for song list with action menus
@@ -114,8 +104,10 @@
   - Implement "Remove from Playlist" action
   - Update queue when playing from playlist
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 3.1, 9.6_
+-
 
-- [ ] 11. Create Song Details page
+- [x] 11. Create Song Details page
+
   - Create new page at /songs/[id]/page.tsx
   - Use Paper component for centered card layout
   - Display large album artwork with Image component or placeholder
@@ -125,33 +117,40 @@
   - Implement responsive layout (stack on mobile, horizontal on desktop)
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 12. Add navigation to Song Details page
+- [x] 12. Add navigation to Song Details page
+
   - Add "Song Details" option to song action menus in Library page
   - Add "Song Details" option to song action menus in Playlist detail page
   - Implement navigation using Next.js router
+
   - _Requirements: 8.3_
 
-- [ ] 13. Implement global notifications system
+- [x] 13. Implement global notifications system
+
   - Configure Notifications provider in root layout
   - Add success notifications for playlist operations
   - Add error notifications for failed operations
   - Add info notifications for user feedback
   - _Requirements: 1.1_
 
-- [ ] 14. Add loading and error states
+- [x] 14. Add loading and error states
+
   - Implement Skeleton loaders for all data-fetching pages
   - Use Loader component for async operations
   - Create Alert components for error messages
   - Add empty state components with illustrations
   - _Requirements: 1.1, 1.2_
+-
 
-- [ ] 15. Implement responsive touch targets for mobile
+- [x] 15. Implement responsive touch targets for mobile
+
   - Ensure all buttons and interactive elements are at least 44x44px on mobile
   - Test touch interactions on mobile devices
   - Adjust spacing and sizing as needed for mobile usability
   - _Requirements: 2.2_
 
-- [ ] 16. Final cleanup and optimization
+- [x] 16. Final cleanup and optimization
+
   - Remove all Tailwind CSS imports and configuration files
   - Remove unused CSS files (globals.css Tailwind imports)
   - Update package.json to remove Tailwind dependencies

@@ -208,6 +208,15 @@ export async function getSongs(): Promise<Song[]> {
 }
 
 /**
+ * Get a single song by ID
+ */
+export async function getSong(songId: string): Promise<Song> {
+  const response = await makeAuthenticatedRequest(`/songs/${songId}/metadata`);
+  const data = await parseResponse<{ song: Song }>(response);
+  return data.song;
+}
+
+/**
  * Get all playlists for the current user
  */
 export async function getPlaylists(): Promise<Playlist[]> {

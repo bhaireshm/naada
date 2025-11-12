@@ -1,6 +1,175 @@
-/* Global styles - Mantine handles most styling */
+/* Global styles for the Music Player application */
 
-body {
-  margin: 0;
-  padding: 0;
+/* Ensure minimum touch target sizes on mobile devices */
+@media (max-width: 768px) {
+  /* Ensure all interactive elements meet minimum touch target size */
+  button,
+  a,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Ensure form inputs have adequate height for touch */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Ensure menu items have adequate touch targets */
+  [role="menuitem"],
+  [role="option"] {
+    min-height: 44px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  /* Ensure links have adequate spacing for touch */
+  a {
+    padding: 8px 4px;
+  }
+
+  /* Improve spacing between interactive elements */
+  .mantine-Group-root > * {
+    margin: 4px;
+  }
+
+  /* Ensure table action buttons have proper spacing */
+  .mantine-Table-td .mantine-ActionIcon-root {
+    margin: 4px;
+  }
+}
+
+/* Improve focus visibility for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid #011f4b;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(1, 31, 75, 0.1);
+}
+
+/* Ensure proper spacing for mobile layouts */
+@media (max-width: 768px) {
+  /* Add padding to prevent content from being hidden behind fixed elements */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Ensure proper spacing around the audio player on mobile */
+  .mantine-AppShell-main {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Improve button hover states on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  button:hover,
+  a:hover,
+  [role="button"]:hover {
+    transform: none;
+  }
+
+  /* Add active state feedback for touch */
+  button:active,
+  a:active,
+  [role="button"]:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+}
+
+/* Ensure menu dropdowns are touch-friendly */
+.mantine-Menu-dropdown {
+  min-width: 200px;
+}
+
+.mantine-Menu-item {
+  min-height: 44px;
+  padding: 12px 16px;
+}
+
+/* Improve slider touch targets on mobile */
+@media (max-width: 768px) {
+  .mantine-Slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mantine-Slider-track {
+    height: 8px;
+  }
+}
+
+/* Ensure proper spacing for cards on mobile */
+@media (max-width: 768px) {
+  .mantine-Card-root {
+    padding: 16px;
+  }
+}
+
+/* Improve modal touch interactions */
+@media (max-width: 768px) {
+  .mantine-Modal-content {
+    max-height: calc(100vh - 80px);
+  }
+
+  .mantine-Modal-header {
+    min-height: 60px;
+  }
+
+  .mantine-Modal-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Ensure drawer navigation items are touch-friendly */
+.mantine-NavLink-root {
+  min-height: 48px;
+  padding: 12px 16px;
+}
+
+/* Improve table row touch targets on mobile */
+@media (max-width: 768px) {
+  .mantine-Table-tr {
+    min-height: 60px;
+  }
+
+  .mantine-Table-td {
+    padding: 12px 8px;
+  }
+}
+
+/* Ensure adequate spacing for icon buttons */
+.mantine-ActionIcon-root {
+  flex-shrink: 0;
+}
+
+/* Improve text input touch targets */
+.mantine-TextInput-input,
+.mantine-PasswordInput-input,
+.mantine-Textarea-input {
+  min-height: 44px;
+}
+
+/* Ensure file input has adequate touch target */
+.mantine-FileInput-input {
+  min-height: 44px;
+}
+
+/* Improve notification positioning on mobile */
+@media (max-width: 768px) {
+  .mantine-Notifications-root {
+    bottom: calc(100px + 16px) !important;
+  }
 }

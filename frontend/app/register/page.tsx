@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { Container, Paper, Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack, Center } from '@mantine/core';
+import { Container, Paper, Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack, Box } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -40,12 +40,39 @@ export default function RegisterPage() {
   };
 
   return (
-    <Center style={{ minHeight: '100vh' }} px="md">
+    <Box
+      style={(theme) => ({
+        minHeight: '100vh',
+        background: theme.other?.gradient || 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'var(--mantine-spacing-md)',
+      })}
+    >
       <Container size={420} w="100%">
-        <Paper withBorder shadow="md" p={30} radius="md">
+        <Paper 
+          shadow="xl" 
+          p={30} 
+          radius="md"
+          style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
           <Stack gap="md">
             <div>
-              <Title order={1} ta="center" mb={8}>
+              <Title 
+                order={1} 
+                ta="center" 
+                mb={8}
+                style={{
+                  background: 'linear-gradient(135deg, #011f4b 0%, #2c3e50 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
                 Create Account
               </Title>
               <Text c="dimmed" size="sm" ta="center">
@@ -60,6 +87,16 @@ export default function RegisterPage() {
                   placeholder="you@example.com"
                   required
                   disabled={loading}
+                  size="md"
+                  styles={{
+                    input: {
+                      backgroundColor: 'white',
+                      color: '#000',
+                      '&::placeholder': {
+                        color: '#adb5bd',
+                      },
+                    },
+                  }}
                   {...form.getInputProps('email')}
                 />
 
@@ -68,6 +105,16 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   required
                   disabled={loading}
+                  size="md"
+                  styles={{
+                    input: {
+                      backgroundColor: 'white',
+                      color: '#000',
+                      '&::placeholder': {
+                        color: '#adb5bd',
+                      },
+                    },
+                  }}
                   {...form.getInputProps('password')}
                 />
 
@@ -76,6 +123,16 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   required
                   disabled={loading}
+                  size="md"
+                  styles={{
+                    input: {
+                      backgroundColor: 'white',
+                      color: '#000',
+                      '&::placeholder': {
+                        color: '#adb5bd',
+                      },
+                    },
+                  }}
                   {...form.getInputProps('confirmPassword')}
                 />
 
@@ -89,6 +146,8 @@ export default function RegisterPage() {
                   type="submit"
                   fullWidth
                   loading={loading}
+                  variant="gradient"
+                  gradient={{ from: 'deepBlue.7', to: 'slate.7', deg: 135 }}
                 >
                   Sign Up
                 </Button>
@@ -97,13 +156,13 @@ export default function RegisterPage() {
 
             <Text c="dimmed" size="sm" ta="center">
               Already have an account?{' '}
-              <Anchor component={Link} href="/login" size="sm">
+              <Anchor component={Link} href="/login" size="sm" c="deepBlue.7">
                 Sign in
               </Anchor>
             </Text>
           </Stack>
         </Paper>
       </Container>
-    </Center>
+    </Box>
   );
 }
