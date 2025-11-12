@@ -23,6 +23,48 @@ interface AudioPlayerActions {
 export type UseAudioPlayerReturn = AudioPlayerState & AudioPlayerActions;
 
 /**
+ * Persisted player state stored in localStorage
+ */
+interface PersistedPlayerState {
+  currentSong: Song | null;
+  currentTime: number;
+  volume: number;
+}
+
+const STORAGE_KEY = 'audioPlayerState';
+
+/**
+ * Load persisted player state from localStorage
+ */
+function loadPersistedState(): PersistedPlayerState | null {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+    
+    const parsed = JSON.parse(stored);
+    return parsed;
+  } catch (error) {
+    console.error('Failed to load persisted player state:', error);
+    return null;
+  }
+}
+
+/**
+ * Save player state to localStorage
+ */
+function savePersistedState(state: PersistedPlayerState): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error('Failed to save player state:', error);
+  }
+}
+
+/**
  * Custom hook to manage audio player state and operations
  * Handles playback, seeking, volume control, and song loading
  * 
@@ -37,12 +79,54 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
   const [volume, setVolumeState] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRestored, setIsRestored] = useState<boolean>(false);
 
-  // Initialize audio element
+  // Initialize audio element and restore persisted state
   useEffect(() => {
     if (typeof window !== 'undefined') {
       audioRef.current = new Audio();
-      audioRef.current.volume = 1; // Initialize with default volume
+      
+      // Load persisted state
+      const persistedState = loadPersistedState();
+      if (persistedState) {
+        setVolumeState(persistedState.volume);
+        audioRef.current.volume = persistedState.volume;
+        
+        // Restore song and position if available
+        if (persistedState.currentSong) {
+          setCurrentSong(persistedState.currentSong);
+          // Load the song asynchronously
+          (async () => {
+            try {
+              const token = await getIdToken();
+              const streamUrl = getSongStreamUrl(persistedState.currentSong!.id);
+              const authenticatedUrl = token 
+                ? `${streamUrl}?token=${token}` 
+                : streamUrl;
+              
+              audioRef.current!.src = authenticatedUrl;
+              audioRef.current!.load();
+              
+              // Wait for metadata to load before seeking
+              audioRef.current!.addEventListener('loadedmetadata', () => {
+                if (persistedState.currentTime > 0) {
+                  audioRef.current!.currentTime = persistedState.currentTime;
+                  setCurrentTime(persistedState.currentTime);
+                }
+                setIsRestored(true);
+              }, { once: true });
+            } catch (err) {
+              console.error('Failed to restore song:', err);
+              setIsRestored(true);
+            }
+          })();
+        } else {
+          setIsRestored(true);
+        }
+      } else {
+        audioRef.current.volume = 1;
+        setIsRestored(true);
+      }
 
       // Set up event listeners
       const audio = audioRef.current;
@@ -190,6 +274,17 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     audioRef.current.volume = clampedVolume;
     setVolumeState(clampedVolume);
   }, []);
+
+  // Persist state changes to localStorage
+  useEffect(() => {
+    if (!isRestored) return; // Don't save until initial restore is complete
+    
+    savePersistedState({
+      currentSong,
+      currentTime,
+      volume,
+    });
+  }, [currentSong, currentTime, volume, isRestored]);
 
   return {
     currentSong,
