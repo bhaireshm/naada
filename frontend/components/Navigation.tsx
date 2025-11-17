@@ -22,6 +22,7 @@ import {
   IconPlaylist,
   IconVinyl,
   IconSettings,
+  IconHeart,
 } from '@tabler/icons-react';
 import { useAuth } from '@/hooks/useAuth';
 import SearchInput from '@/components/SearchInput';
@@ -158,6 +159,32 @@ export default function Navigation() {
                   }}
                 >
                   Library
+                </Button>
+                <Button
+                  variant="subtle"
+                  leftSection={<IconHeart size={18} />}
+                  onClick={() => router.push('/favorites')}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    root: {
+                      color: theme.colors.primary[0],
+                      fontWeight: 500,
+                      transition: 'all 150ms ease',
+                      position: 'relative',
+                      borderBottom: isActive('/favorites') 
+                        ? `2px solid ${theme.colors.primary[0]}` 
+                        : '2px solid transparent',
+                      borderRadius: isActive('/favorites') 
+                        ? `${theme.radius.md} ${theme.radius.md} 0 0` 
+                        : theme.radius.md,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      },
+                    },
+                  }}
+                >
+                  Favorites
                 </Button>
                 <Button
                   variant="subtle"
@@ -313,6 +340,20 @@ export default function Navigation() {
           active={isActive('/library')}
           onClick={() => {
             router.push('/library');
+            closeDrawer();
+          }}
+          style={{
+            borderRadius: theme.radius.md,
+            marginBottom: theme.spacing.sm,
+          }}
+        />
+        <NavLink
+          label="Favorites"
+          description="Liked songs"
+          leftSection={<IconHeart size={20} />}
+          active={isActive('/favorites')}
+          onClick={() => {
+            router.push('/favorites');
             closeDrawer();
           }}
           style={{

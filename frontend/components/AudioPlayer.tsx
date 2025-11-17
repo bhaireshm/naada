@@ -22,6 +22,7 @@ import {
   IconVolume3,
   IconVolumeOff,
 } from '@tabler/icons-react';
+import FavoriteButton from '@/components/FavoriteButton';
 
 interface AudioPlayerProps {
   song: Song | null;
@@ -163,15 +164,18 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             />
           </Box>
           <Box style={{ minWidth: 0, flex: 1 }}>
-            <Text 
-              size="sm" 
-              fw={600} 
-              truncate 
-              c={textColor}
-              style={{ fontSize: '13px' }}
-            >
-              {currentSong.title}
-            </Text>
+            <Group gap={4} wrap="nowrap">
+              <Text 
+                size="sm" 
+                fw={600} 
+                truncate 
+                c={textColor}
+                style={{ fontSize: '13px', flex: 1, minWidth: 0 }}
+              >
+                {currentSong.title}
+              </Text>
+              <FavoriteButton songId={currentSong.id} size="sm" />
+            </Group>
             <Text 
               size="xs" 
               truncate 

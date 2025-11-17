@@ -319,3 +319,52 @@ export async function search(
   const response = await makeAuthenticatedRequest(`/search?${params.toString()}`);
   return parseResponse(response);
 }
+
+/**
+ * Add a song to favorites
+ */
+export async function addFavorite(songId: string): Promise<any> {
+  const response = await makeAuthenticatedRequest(`/favorites/${songId}`, {
+    method: 'POST',
+  });
+  return parseResponse(response);
+}
+
+/**
+ * Remove a song from favorites
+ */
+export async function removeFavorite(songId: string): Promise<void> {
+  const response = await makeAuthenticatedRequest(`/favorites/${songId}`, {
+    method: 'DELETE',
+  });
+  await parseResponse(response);
+}
+
+/**
+ * Get all favorites for the current user
+ */
+export async function getFavorites(limit: number = 100, offset: number = 0): Promise<any> {
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+    offset: offset.toString(),
+  });
+  
+  const response = await makeAuthenticatedRequest(`/favorites?${params.toString()}`);
+  return parseResponse(response);
+}
+
+/**
+ * Check if a song is favorited
+ */
+export async function checkFavoriteStatus(songId: string): Promise<{ isFavorite: boolean }> {
+  const response = await makeAuthenticatedRequest(`/favorites/${songId}/status`);
+  return parseResponse(response);
+}
+
+/**
+ * Get favorite count for a song
+ */
+export async function getFavoriteCount(songId: string): Promise<{ count: number }> {
+  const response = await makeAuthenticatedRequest(`/songs/${songId}/favorites/count`);
+  return parseResponse(response);
+}
