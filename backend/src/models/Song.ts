@@ -58,4 +58,10 @@ const songSchema = new Schema<ISong>({
   },
 });
 
+// Add indexes for search optimization
+songSchema.index({ title: 1 });
+songSchema.index({ artist: 1 });
+songSchema.index({ album: 1 });
+songSchema.index({ artist: 1, album: 1 });
+
 export const Song = model<ISong>('Song', songSchema);

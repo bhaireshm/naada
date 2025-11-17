@@ -31,4 +31,7 @@ const playlistSchema = new Schema<IPlaylist>({
   },
 });
 
+// Add compound index for search optimization
+playlistSchema.index({ name: 1, userId: 1 });
+
 export const Playlist = model<IPlaylist>('Playlist', playlistSchema);

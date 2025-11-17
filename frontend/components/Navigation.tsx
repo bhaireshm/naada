@@ -24,6 +24,7 @@ import {
   IconSettings,
 } from '@tabler/icons-react';
 import { useAuth } from '@/hooks/useAuth';
+import SearchInput from '@/components/SearchInput';
 
 /**
  * Navigation component with links to main pages and user authentication display
@@ -125,61 +126,66 @@ export default function Navigation() {
             </Link>
           </Group>
 
-          {/* Desktop Navigation Links */}
+          {/* Search and Desktop Navigation Links */}
           {user && (
-            <Group gap={theme.spacing.xs} visibleFrom="md">
-              <Button
-                variant="subtle"
-                leftSection={<IconMusic size={18} />}
-                onClick={() => router.push('/library')}
-                size="md"
-                radius="md"
-                styles={{
-                  root: {
-                    color: theme.colors.primary[0],
-                    fontWeight: 500,
-                    transition: 'all 150ms ease',
-                    position: 'relative',
-                    borderBottom: isActive('/library') 
-                      ? `2px solid ${theme.colors.primary[0]}` 
-                      : '2px solid transparent',
-                    borderRadius: isActive('/library') 
-                      ? `${theme.radius.md} ${theme.radius.md} 0 0` 
-                      : theme.radius.md,
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            <Group gap={theme.spacing.md} visibleFrom="md" style={{ flex: 1, maxWidth: 800 }}>
+              <div style={{ flex: 1, maxWidth: 400 }}>
+                <SearchInput />
+              </div>
+              <Group gap={theme.spacing.xs}>
+                <Button
+                  variant="subtle"
+                  leftSection={<IconMusic size={18} />}
+                  onClick={() => router.push('/library')}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    root: {
+                      color: theme.colors.primary[0],
+                      fontWeight: 500,
+                      transition: 'all 150ms ease',
+                      position: 'relative',
+                      borderBottom: isActive('/library') 
+                        ? `2px solid ${theme.colors.primary[0]}` 
+                        : '2px solid transparent',
+                      borderRadius: isActive('/library') 
+                        ? `${theme.radius.md} ${theme.radius.md} 0 0` 
+                        : theme.radius.md,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      },
                     },
-                  },
-                }}
-              >
-                Library
-              </Button>
-              <Button
-                variant="subtle"
-                leftSection={<IconPlaylist size={18} />}
-                onClick={() => router.push('/playlists')}
-                size="md"
-                radius="md"
-                styles={{
-                  root: {
-                    color: theme.colors.primary[0],
-                    fontWeight: 500,
-                    transition: 'all 150ms ease',
-                    position: 'relative',
-                    borderBottom: isActive('/playlists') 
-                      ? `2px solid ${theme.colors.primary[0]}` 
-                      : '2px solid transparent',
-                    borderRadius: isActive('/playlists') 
-                      ? `${theme.radius.md} ${theme.radius.md} 0 0` 
-                      : theme.radius.md,
-                    '&:hover': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  }}
+                >
+                  Library
+                </Button>
+                <Button
+                  variant="subtle"
+                  leftSection={<IconPlaylist size={18} />}
+                  onClick={() => router.push('/playlists')}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    root: {
+                      color: theme.colors.primary[0],
+                      fontWeight: 500,
+                      transition: 'all 150ms ease',
+                      position: 'relative',
+                      borderBottom: isActive('/playlists') 
+                        ? `2px solid ${theme.colors.primary[0]}` 
+                        : '2px solid transparent',
+                      borderRadius: isActive('/playlists') 
+                        ? `${theme.radius.md} ${theme.radius.md} 0 0` 
+                        : theme.radius.md,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      },
                     },
-                  },
-                }}
-              >
-                Playlists
-              </Button>
+                  }}
+                >
+                  Playlists
+                </Button>
+              </Group>
             </Group>
           )}
 

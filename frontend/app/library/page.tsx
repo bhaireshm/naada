@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getSongs, Song } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAudioPlayerContext } from '@/contexts/AudioPlayerContext';
@@ -22,6 +22,7 @@ import {
   Skeleton,
   useMantineTheme,
   useMantineColorScheme,
+  Badge,
 } from '@mantine/core';
 import {
   IconPlayerPlay,
@@ -31,6 +32,7 @@ import {
   IconPlaylistAdd,
   IconInfoCircle,
   IconAlertCircle,
+  IconX,
 } from '@tabler/icons-react';
 import PlayingAnimation from '@/components/PlayingAnimation';
 
@@ -42,8 +44,13 @@ function LibraryPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const { setQueue, isPlaying, currentSong: audioCurrentSong } = useAudioPlayerContext();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
+
+  // Get filter parameters from URL
+  const artistFilter = searchParams.get('artist');
+  const albumFilter = searchParams.get('album');
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -75,12 +82,24 @@ function LibraryPageContent() {
     }
   };
 
+  // Filter songs based on URL parameters
+  const filteredSongs = songs.filter((song) => {
+    if (artistFilter && song.artist !== artistFilter) return false;
+    if (albumFilter && song.album !== albumFilter) return false;
+    return true;
+  });
+
+  // Clear filters
+  const clearFilters = () => {
+    router.push('/library');
+  };
+
   /**
    * Handle song selection for playback
    */
   const handlePlaySong = (song: Song, index: number) => {
-    // Set the queue to all songs starting from the selected song
-    setQueue(songs, index);
+    // Set the queue to filtered songs starting from the selected song
+    setQueue(filteredSongs, index);
   };
 
   /**
@@ -125,19 +144,57 @@ function LibraryPageContent() {
               >
                 My Library
               </Title>
-              <Text c="dimmed" size="sm">
-                Your personal music collection
-              </Text>
+              <Group gap="xs">
+                <Text c="dimmed" size="sm">
+                  {filteredSongs.length} {filteredSongs.length === 1 ? 'song' : 'songs'}
+                </Text>
+                {(artistFilter || albumFilter) && (
+                  <>
+                    <Text c="dimmed" size="sm">•</Text>
+                    <Badge
+                      variant="light"
+                      color="accent1"
+                      rightSection={
+                        <ActionIcon
+                          size="xs"
+                          color="accent1"
+                          radius="xl"
+                          variant="transparent"
+                          onClick={clearFilters}
+                        >
+                          <IconX size={12} />
+                        </ActionIcon>
+                      }
+                      style={{ paddingRight: 3 }}
+                    >
+                      {albumFilter ? `Album: ${albumFilter}` : `Artist: ${artistFilter}`}
+                    </Badge>
+                  </>
+                )}
+              </Group>
             </Stack>
-            <Button
-              leftSection={<IconUpload size={18} />}
-              onClick={() => setShowUploadModal(true)}
-              variant="gradient"
-              gradient={{ from: 'accent1.7', to: 'secondary.7', deg: 135 }}
-              size="md"
-            >
-              Upload Song
-            </Button>
+            <Group gap="xs">
+              {albumFilter && filteredSongs.length > 0 && (
+                <Button
+                  leftSection={<IconPlayerPlay size={18} />}
+                  onClick={() => setQueue(filteredSongs, 0)}
+                  variant="filled"
+                  color="accent1"
+                  size="md"
+                >
+                  Play All
+                </Button>
+              )}
+              <Button
+                leftSection={<IconUpload size={18} />}
+                onClick={() => setShowUploadModal(true)}
+                variant="gradient"
+                gradient={{ from: 'accent1.7', to: 'secondary.7', deg: 135 }}
+                size="md"
+              >
+                Upload Song
+              </Button>
+            </Group>
           </Group>
         </Box>
 
@@ -169,7 +226,7 @@ function LibraryPageContent() {
         )}
 
         {/* Empty State */}
-        {!loading && !error && songs.length === 0 && (
+        {!loading && !error && filteredSongs.length === 0 && songs.length === 0 && (
           <Box
             p="xl"
             style={{
@@ -209,8 +266,25 @@ function LibraryPageContent() {
           </Box>
         )}
 
+        {/* Filtered Empty State */}
+        {!loading && !error && filteredSongs.length === 0 && songs.length > 0 && (
+          <Alert
+            icon={<IconMusic size={18} />}
+            title="No songs match the filter"
+            color="blue"
+            variant="light"
+          >
+            <Text size="sm" mb="xs">
+              No songs found for {albumFilter ? `album "${albumFilter}"` : `artist "${artistFilter}"`}
+            </Text>
+            <Button size="xs" variant="outline" onClick={clearFilters}>
+              Clear filter
+            </Button>
+          </Alert>
+        )}
+
         {/* Song List - Desktop Table */}
-        {!loading && !error && songs.length > 0 && isMounted && (
+        {!loading && !error && filteredSongs.length > 0 && isMounted && (
           <>
             <Box visibleFrom="md">
               <Table highlightOnHover>
@@ -223,7 +297,7 @@ function LibraryPageContent() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {songs.map((song, index) => (
+                  {filteredSongs.map((song, index) => (
                     <Table.Tr
                       key={song.id}
                       bg={
@@ -313,7 +387,7 @@ function LibraryPageContent() {
 
             {/* Song List - Mobile Stack */}
             <Stack gap="xs" hiddenFrom="md">
-              {songs.map((song, index) => (
+              {filteredSongs.map((song, index) => (
                 <Box
                   key={song.id}
                   p="md"

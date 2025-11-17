@@ -299,3 +299,23 @@ export async function addSongToPlaylist(
   // Update the playlist with the new song list
   return updatePlaylist(playlistId, currentSongIds);
 }
+
+/**
+ * Search across songs, artists, albums, and playlists
+ */
+export async function search(
+  query: string,
+  filter: 'all' | 'songs' | 'artists' | 'albums' | 'playlists' = 'all',
+  limit: number = 5,
+  offset: number = 0
+): Promise<any> {
+  const params = new URLSearchParams({
+    q: query,
+    filter,
+    limit: limit.toString(),
+    offset: offset.toString(),
+  });
+
+  const response = await makeAuthenticatedRequest(`/search?${params.toString()}`);
+  return parseResponse(response);
+}
