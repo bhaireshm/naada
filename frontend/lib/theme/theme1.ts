@@ -8,29 +8,30 @@ import { animations } from './animations';
 
 /**
  * Theme 1 - Light Mode
- * Primary: Mint green (#a0f2c9)
- * Secondary: Sage green (#647d70)
- * Tertiary: Golden yellow (#eac749)
- * Accent: Dusty rose (#36444f)
+ * Primary: Sage green (#ccd5ae)
+ * Secondary: Light sage (#e9edc9)
+ * Tertiary: Cream (#fefae0)
+ * Accent1: Peach (#faedcd)
+ * Accent2: Tan (#d4a373)
  */
 export const theme1LightPalette: ThemePalette = {
   id: 'theme1',
   name: 'Theme 1',
   colors: {
-    primary: '#a0f2c9',
-    secondary: '#647d70',
-    tertiary: '#eac749',
-    accent1: '#36444f',
-    accent2: '#36444f',
-    accent3: '#36444f',
+    primary: '#ccd5ae',
+    secondary: '#e9edc9',
+    tertiary: '#fefae0',
+    accent1: '#faedcd',
+    accent2: '#d4a373',
+    accent3: '#d4a373',
   },
   mantineColors: {
-    primary: generateColorScale('#a0f2c9'),
-    secondary: generateColorScale('#647d70'),
-    tertiary: generateColorScale('#eac749'),
-    accent1: generateColorScale('#36444f'),
-    accent2: generateColorScale('#36444f'),
-    accent3: generateColorScale('#36444f'),
+    primary: generateColorScale('#ccd5ae'),
+    secondary: generateColorScale('#e9edc9'),
+    tertiary: generateColorScale('#fefae0'),
+    accent1: generateColorScale('#faedcd'),
+    accent2: generateColorScale('#d4a373'),
+    accent3: generateColorScale('#d4a373'),
   },
 };
 
@@ -42,20 +43,20 @@ export const theme1DarkPalette: ThemePalette = {
   id: 'theme1',
   name: 'Theme 1 Dark',
   colors: {
-    primary: '#a0f2c9',
-    secondary: '#647d70',
-    tertiary: '#eac749',
-    accent1: '#36444f',
-    accent2: '#36444f',
-    accent3: '#36444f',
+    primary: '#ccd5ae',
+    secondary: '#e9edc9',
+    tertiary: '#fefae0',
+    accent1: '#faedcd',
+    accent2: '#d4a373',
+    accent3: '#d4a373',
   },
   mantineColors: {
-    primary: generateColorScale('#a0f2c9'),
-    secondary: generateColorScale('#647d70'),
-    tertiary: generateColorScale('#eac749'),
-    accent1: generateColorScale('#36444f'),
-    accent2: generateColorScale('#36444f'),
-    accent3: generateColorScale('#36444f'),
+    primary: generateColorScale('#ccd5ae'),
+    secondary: generateColorScale('#e9edc9'),
+    tertiary: generateColorScale('#fefae0'),
+    accent1: generateColorScale('#faedcd'),
+    accent2: generateColorScale('#d4a373'),
+    accent3: generateColorScale('#d4a373'),
   },
 };
 

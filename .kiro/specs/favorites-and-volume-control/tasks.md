@@ -17,27 +17,25 @@
   - Add index on songId for favorite count queries
   - _Requirements: 12_
 
-- [ ] 1.2 Create favorites controller
+- [x] 1.2 Create favorites controller
   - Create `backend/src/controllers/favoritesController.ts`
   - Implement addFavorite function to create favorite with duplicate handling
   - Implement removeFavorite function to delete favorite
   - Implement getFavorites function with song population and pagination
   - Implement checkFavoriteStatus function to check if song is favorited
-
   - Implement getFavoriteCount function to count favorites for a song
   - _Requirements: 11_
 
-- [ ] 1.3 Create favorites routes
+- [x] 1.3 Create favorites routes
   - Create `backend/src/routes/favorites.ts`
   - Add POST /favorites/:songId route for adding favorites
   - Add DELETE /favorites/:songId route for removing favorites
-
   - Add GET /favorites route for getting all user favorites
   - Add GET /favorites/:songId/status route for checking favorite status
   - Apply verifyToken middleware to all routes
   - _Requirements: 11_
 
-- [ ] 1.4 Integrate favorites routes into application
+- [x] 1.4 Integrate favorites routes into application
   - Import favorites routes in `backend/src/index.ts`
   - Mount favorites routes at /favorites path
   - Test all endpoints with API client
@@ -136,7 +134,7 @@
   - Ensure visibility on both mobile and desktop
   - _Requirements: 3_
 
-- [ ] 5. Create Favorites page
+- [x] 5. Create Favorites page
   - Build dedicated Favorites page to display all favorited songs
   - Show total favorite count
   - Implement empty state for no favorites
@@ -177,123 +175,87 @@
   - Ensure navigation works on mobile and desktop
   - _Requirements: 2_
 
-- [ ] 6. Implement volume control in AudioPlayerContext
-  - Extend AudioPlayerContext with volume state
-  - Add volume control functions (set, increase, decrease, mute)
-  - Implement volume persistence with localStorage
-  - Sync volume with audio element
-  - _Requirements: 5, 8_
+- [x] 6. Implement volume control enhancements in useAudioPlayer
 
-- [ ] 6.1 Extend AudioPlayerContext with volume state
-  - Update `frontend/contexts/AudioPlayerContext.tsx` or audio player hook
-  - Add volume state (0-100), isMuted state, previousVolume state
-  - Initialize volume from localStorage or default to 70%
-  - Initialize mute state from localStorage
-  - _Requirements: 5, 8_
 
-- [ ] 6.2 Implement volume control functions
-  - Create setVolume function to update volume and audio element
-  - Create toggleMute function to mute/unmute with volume restoration
-  - Create increaseVolume function (default +5%)
-  - Create decreaseVolume function (default -5%)
-  - Clamp volume values between 0 and 100
-  - _Requirements: 5, 7_
+  - Add volume persistence with localStorage
+  - Add mute state management with volume restoration
+  - Add increaseVolume and decreaseVolume functions
+  - _Requirements: 5, 7, 8_
 
-- [ ] 6.3 Implement volume persistence
-  - Save volume to localStorage on every change (with debouncing)
-  - Save mute state to localStorage
-  - Load volume and mute state on app initialization
+- [x] 6.1 Implement volume persistence in useAudioPlayer
+
+  - Save volume to localStorage key 'musicPlayerVolume' on every change
+  - Save mute state to localStorage key 'musicPlayerMuted'
+  - Load volume and mute state on app initialization (in existing persisted state logic)
+  - Default to 70% volume (0.7) for first-time users
   - Handle localStorage unavailable gracefully (use in-memory state)
   - _Requirements: 8_
 
-- [ ] 6.4 Sync volume with audio element
-  - Update audio element volume when state changes: audioRef.current.volume = volume / 100
+- [x] 6.2 Implement mute state management
+
+  - Add isMuted state to useAudioPlayer hook
+  - Add previousVolume state to store volume before muting
+  - Create toggleMute function to mute/unmute with volume restoration
+  - When muting: save current volume to previousVolume, set volume to 0, set isMuted to true
+  - When unmuting: restore previousVolume, set isMuted to false
   - Update audio element muted property: audioRef.current.muted = isMuted
-  - Ensure audio element exists before updating
-  - _Requirements: 5, 7_
+  - _Requirements: 7_
 
-- [ ] 7. Build VolumeControl component
-  - Create VolumeControl component with slider and mute button
-  - Implement dynamic volume icon based on level
-  - Add volume percentage tooltip
-  - Make component touch-friendly for mobile
-  - _Requirements: 5, 6, 10_
+- [x] 6.3 Add increaseVolume and decreaseVolume functions
 
-- [ ] 7.1 Create VolumeControl component structure
-  - Create `frontend/components/VolumeControl.tsx`
-  - Use Mantine Group to layout volume icon and slider
-  - Connect to AudioPlayerContext for volume state and actions
-  - Position component in Playing Bar
-  - _Requirements: 5_
+  - Create increaseVolume function that increases volume by 0.05 (5%)
+  - Create decreaseVolume function that decreases volume by 0.05 (5%)
+  - Clamp volume values between 0 and 1
+  - Ensure functions work with existing setVolume logic
+  - _Requirements: 5, 9_
 
-- [ ] 7.2 Implement volume slider
-  - Use Mantine Slider component with range 0-100
-  - Connect slider value to volume state
-  - Update volume on slider change
-  - Show volume percentage tooltip on hover/drag
-  - Make slider touch-friendly with larger thumb on mobile
-  - _Requirements: 5, 10_
+- [ ] 7. Enhance AudioPlayer component with improved volume controls
+  - Update volume icon logic to use mute state
+  - Ensure volume slider works with 0-1 range (already implemented)
+  - Add volume percentage display (optional enhancement)
+  - Ensure mobile-friendly touch targets
+  - _Requirements: 5, 6, 7, 10_
 
-- [ ] 7.3 Implement dynamic volume icon
-  - Display IconVolume3 (crossed) when muted (volume = 0)
-  - Display IconVolume when volume is 1-33%
-  - Display IconVolume2 when volume is 34-66%
-  - Display IconVolume3 when volume is 67-100%
-  - Add click handler to toggle mute
+- [ ] 7.1 Update volume icon to use mute state
+  - Modify renderVolumeIcon function in AudioPlayer.tsx to check isMuted state
+  - Display IconVolumeOff when isMuted is true (regardless of volume value)
+  - Display IconVolume3 when volume is 0 and not muted
+  - Display IconVolume when volume is 0.01-0.33
+  - Display IconVolume2 when volume is 0.34-0.66
+  - Display IconVolume when volume is 0.67-1.0
   - _Requirements: 6, 7_
 
-- [ ] 7.4 Add volume percentage display
-  - Show current volume percentage near slider
-  - Display percentage during slider interaction
-  - Hide percentage when not interacting (optional)
-  - Style percentage text for readability
+- [ ] 7.2 Update mute button to use toggleMute function
+  - Change onClick handler from `setVolume(volume === 0 ? 1 : 0)` to `toggleMute()`
+  - Update aria-label to reflect mute/unmute state dynamically
+  - Ensure button works correctly with new mute state management
+  - _Requirements: 7_
+
+- [ ] 7.3 Add volume percentage display (optional)
+  - Add Text component showing volume percentage (volume * 100)
+  - Position near volume slider on desktop
+  - Hide on mobile to save space
+  - Style for readability
   - _Requirements: 5_
 
 - [ ] 8. Add keyboard shortcuts for volume control
-  - Implement global keyboard event listeners
+  - Implement global keyboard event listeners in AudioPlayer component
   - Add Up Arrow to increase volume by 5%
   - Add Down Arrow to decrease volume by 5%
   - Add M key to toggle mute
-  - Prevent shortcuts when input fields are focused
+  - Prevent shortcuts when input fields or search overlay are focused
   - _Requirements: 9_
 
-- [ ] 8.1 Implement keyboard event listeners
-  - Add useEffect hook in AudioPlayerContext or Playing Bar
-  - Listen for keydown events on document
-  - Check if search overlay or input fields are focused
-  - Call appropriate volume functions based on key pressed
-  - Prevent default behavior for handled keys
+- [ ] 8.1 Implement keyboard event listeners in AudioPlayer
+  - Add useEffect hook in AudioPlayer.tsx component
+  - Listen for keydown events on window/document
+  - Check if search overlay is open or input fields are focused (document.activeElement)
+  - On ArrowUp: call increaseVolume() and prevent default
+  - On ArrowDown: call decreaseVolume() and prevent default
+  - On 'm' or 'M': call toggleMute() and prevent default
+  - Clean up event listener on unmount
   - _Requirements: 9_
-
-- [ ] 8.2 Test keyboard shortcuts
-  - Test Up Arrow increases volume by 5%
-  - Test Down Arrow decreases volume by 5%
-  - Test M key toggles mute
-  - Verify volume doesn't exceed 100% or go below 0%
-  - Verify shortcuts don't work when inputs are focused
-  - _Requirements: 9_
-
-- [ ] 9. Integrate VolumeControl into Playing Bar
-  - Add VolumeControl component to Playing Bar
-  - Position volume controls appropriately (right side)
-  - Ensure responsive layout on mobile and desktop
-  - Test volume control functionality in Playing Bar
-  - _Requirements: 5, 10_
-
-- [ ] 9.1 Update Playing Bar component
-  - Import and add VolumeControl component
-  - Position volume controls on the right side of Playing Bar
-  - Adjust layout for mobile (show icon only, expand on click - optional)
-  - Ensure volume controls don't overlap other controls
-  - _Requirements: 5, 10_
-
-- [ ] 9.2 Test Playing Bar integration
-  - Test volume slider functionality
-  - Test mute button
-  - Test keyboard shortcuts
-  - Test on mobile devices
-  - Verify volume persists across page navigation
-  - _Requirements: 5, 7, 8, 9, 10_
 
 - [ ]* 10. Add accessibility features
   - Add ARIA labels to all volume controls

@@ -8,6 +8,7 @@ interface AudioPlayerState {
   currentTime: number;
   duration: number;
   volume: number;
+  isMuted: boolean;
   loading: boolean;
   error: string | null;
   queue: Song[];
@@ -19,6 +20,9 @@ interface AudioPlayerActions {
   pause: () => void;
   seek: (time: number) => void;
   setVolume: (volume: number) => void;
+  toggleMute: () => void;
+  increaseVolume: (amount?: number) => void;
+  decreaseVolume: (amount?: number) => void;
   loadSong: (song: Song) => void;
   next: () => void;
   previous: () => void;
@@ -71,16 +75,22 @@ function savePersistedState(state: PersistedPlayerState): void {
   }
 }
 
+const VOLUME_STORAGE_KEY = 'musicPlayerVolume';
+const MUTE_STORAGE_KEY = 'musicPlayerMuted';
+const DEFAULT_VOLUME = 0.7; // 70%
+
 export function useAudioPlayer(): UseAudioPlayerReturn {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isInitializedRef = useRef<boolean>(false);
+  const previousVolumeRef = useRef<number>(DEFAULT_VOLUME);
   
   // Initialize state with default values to prevent hydration mismatch
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
-  const [volume, setVolumeState] = useState<number>(1);
+  const [volume, setVolumeState] = useState<number>(DEFAULT_VOLUME);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [queue, setQueue] = useState<Song[]>([]);
@@ -92,6 +102,28 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
       isInitializedRef.current = true;
       audioRef.current = new Audio();
       
+      // Load volume and mute state from localStorage
+      try {
+        const storedVolume = localStorage.getItem(VOLUME_STORAGE_KEY);
+        const storedMuted = localStorage.getItem(MUTE_STORAGE_KEY);
+        
+        if (storedVolume) {
+          const vol = parseFloat(storedVolume);
+          setVolumeState(vol);
+          previousVolumeRef.current = vol;
+          audioRef.current.volume = vol;
+        } else {
+          audioRef.current.volume = DEFAULT_VOLUME;
+        }
+        
+        if (storedMuted === 'true') {
+          setIsMuted(true);
+          audioRef.current.muted = true;
+        }
+      } catch (error) {
+        console.error('Failed to load volume settings:', error);
+      }
+      
       // Load persisted state after mount to prevent hydration mismatch
       const persistedState = loadPersistedState();
       
@@ -100,8 +132,6 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
         setCurrentSong(persistedState.currentSong);
         setQueue(persistedState.queue);
         setCurrentIndex(persistedState.currentIndex);
-        setVolumeState(persistedState.volume);
-        audioRef.current.volume = persistedState.volume;
         
         // Restore song and position if available
         if (persistedState.currentSong) {
@@ -289,7 +319,73 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     const clampedVolume = Math.max(0, Math.min(1, newVolume));
     audioRef.current.volume = clampedVolume;
     setVolumeState(clampedVolume);
-  }, []);
+    previousVolumeRef.current = clampedVolume;
+    
+    // Persist to localStorage
+    try {
+      localStorage.setItem(VOLUME_STORAGE_KEY, clampedVolume.toString());
+    } catch (error) {
+      console.error('Failed to save volume:', error);
+    }
+    
+    // Unmute if volume is increased from 0
+    if (clampedVolume > 0 && isMuted) {
+      setIsMuted(false);
+      if (audioRef.current) {
+        audioRef.current.muted = false;
+      }
+      try {
+        localStorage.setItem(MUTE_STORAGE_KEY, 'false');
+      } catch (error) {
+        console.error('Failed to save mute state:', error);
+      }
+    }
+  }, [isMuted]);
+
+  /**
+   * Toggle mute state
+   */
+  const toggleMute = useCallback(() => {
+    if (!audioRef.current) return;
+    
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    audioRef.current.muted = newMutedState;
+    
+    if (newMutedState) {
+      // Muting: save current volume
+      previousVolumeRef.current = volume;
+    } else {
+      // Unmuting: restore previous volume
+      if (previousVolumeRef.current > 0) {
+        setVolumeState(previousVolumeRef.current);
+        audioRef.current.volume = previousVolumeRef.current;
+      }
+    }
+    
+    // Persist mute state
+    try {
+      localStorage.setItem(MUTE_STORAGE_KEY, newMutedState.toString());
+    } catch (error) {
+      console.error('Failed to save mute state:', error);
+    }
+  }, [isMuted, volume]);
+
+  /**
+   * Increase volume by specified amount
+   */
+  const increaseVolume = useCallback((amount: number = 0.05) => {
+    const newVolume = Math.min(1, volume + amount);
+    setVolume(newVolume);
+  }, [volume, setVolume]);
+
+  /**
+   * Decrease volume by specified amount
+   */
+  const decreaseVolume = useCallback((amount: number = 0.05) => {
+    const newVolume = Math.max(0, volume - amount);
+    setVolume(newVolume);
+  }, [volume, setVolume]);
 
   /**
    * Set the playback queue
@@ -375,6 +471,7 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     currentTime,
     duration,
     volume,
+    isMuted,
     loading,
     error,
     queue,
@@ -383,6 +480,9 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     pause,
     seek,
     setVolume,
+    toggleMute,
+    increaseVolume,
+    decreaseVolume,
     loadSong,
     next,
     previous,
