@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { Modal, TextInput, Tabs, Stack, Text, Loader, Center, Box, useMantineTheme, Divider } from '@mantine/core';
+import { Modal, TextInput, Tabs, Stack, Text, Loader, Center, Box, useMantineTheme } from '@mantine/core';
 import { IconSearch, IconMusic, IconUser, IconDisc, IconPlaylist, IconClock, IconX } from '@tabler/icons-react';
-import { useSearch } from '@/contexts/SearchContext';
+import { useSearch, SearchFilter } from '@/contexts/SearchContext';
 import SearchResultItem from '@/components/SearchResultItem';
 import { useRouter } from 'next/navigation';
 import { useAudioPlayerContext } from '@/contexts/AudioPlayerContext';
@@ -156,11 +156,11 @@ export default function SearchOverlay() {
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex((prev) => (prev + 1) % totalResults);
+          setSelectedIndex((selectedIndex + 1) % totalResults);
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex((prev) => (prev - 1 + totalResults) % totalResults);
+          setSelectedIndex((selectedIndex - 1 + totalResults) % totalResults);
           break;
         case 'Enter':
           e.preventDefault();
@@ -211,7 +211,7 @@ export default function SearchOverlay() {
               border: 'none',
               borderBottom: `2px solid ${theme.colors.gray[3]}`,
               borderRadius: 0,
-              paddingLeft: theme.spacing.xl,
+              paddingLeft: '2.5rem',
               fontSize: theme.fontSizes.lg,
               '&:focus': {
                 borderBottomColor: theme.colors.accent1[6],
@@ -223,7 +223,7 @@ export default function SearchOverlay() {
         {/* Filter Tabs */}
         <Tabs
           value={activeFilter}
-          onChange={(value) => setActiveFilter(value as unknown)}
+          onChange={(value) => setActiveFilter(value as SearchFilter)}
           mt="md"
         >
           <Tabs.List>
@@ -330,7 +330,7 @@ export default function SearchOverlay() {
             <Stack align="center" gap="sm">
               <IconX size={48} color={theme.colors.gray[4]} />
               <Text size="sm" c="dimmed" ta="center">
-                No results found for "{query}"
+                No results found for &ldquo;{query}&rdquo;
               </Text>
               <Text size="xs" c="dimmed" ta="center">
                 Try different keywords or check your spelling

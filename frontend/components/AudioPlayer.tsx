@@ -317,7 +317,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
         </Box>
 
         {/* Right: Volume Control */}
-        <Group gap="xs" style={{ flex: '0 0 90px' }} justify="flex-end">
+        <Group gap="xs" style={{ flex: '0 0 130px' }} justify="flex-end">
           <ActionIcon
             variant="light"
             color="accent1"
@@ -358,6 +358,19 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
               },
             }}
           />
+          <Text
+            size="xs"
+            c={textColor}
+            fw={500}
+            style={{
+              minWidth: 32,
+              textAlign: 'right',
+              fontSize: '11px',
+              userSelect: 'none',
+            }}
+          >
+            {Math.round(volume * 100)}%
+          </Text>
         </Group>
       </Group>
 

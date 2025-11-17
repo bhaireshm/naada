@@ -63,6 +63,7 @@ export default function SearchInput({
       styles={{
         input: {
           cursor: 'pointer',
+          paddingLeft: '2.5rem',
         },
       }}
     />
