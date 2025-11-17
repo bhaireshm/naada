@@ -177,8 +177,6 @@
 
 - [x] 6. Implement volume control enhancements in useAudioPlayer
 
-
-
   - Add volume persistence with localStorage
   - Add mute state management with volume restoration
   - Add increaseVolume and decreaseVolume functions
@@ -211,7 +209,7 @@
   - Ensure functions work with existing setVolume logic
   - _Requirements: 5, 9_
 
-- [ ] 7. Enhance AudioPlayer component with improved volume controls
+- [x] 7. Enhance AudioPlayer component with improved volume controls
   - Update volume icon logic to use mute state
   - Ensure volume slider works with 0-1 range (already implemented)
   - Add volume percentage display (optional enhancement)
@@ -219,7 +217,6 @@
   - _Requirements: 5, 6, 7, 10_
 
 - [x] 7.1 Update volume icon to use mute state
-
 
   - Modify renderVolumeIcon function in AudioPlayer.tsx to check isMuted state
   - Display IconVolumeOff when isMuted is true (regardless of volume value)
@@ -229,33 +226,28 @@
   - Display IconVolume when volume is 0.67-1.0
   - _Requirements: 6, 7_
 
-
-
-- [ ] 7.2 Update mute button to use toggleMute function
+- [x] 7.2 Update mute button to use toggleMute function
   - Change onClick handler from `setVolume(volume === 0 ? 1 : 0)` to `toggleMute()`
   - Update aria-label to reflect mute/unmute state dynamically
   - Ensure button works correctly with new mute state management
   - _Requirements: 7_
 
-- [ ] 7.3 Add volume percentage display (optional)
+- [ ]* 7.3 Add volume percentage display (optional)
   - Add Text component showing volume percentage (volume * 100)
   - Position near volume slider on desktop
   - Hide on mobile to save space
-
   - Style for readability
   - _Requirements: 5_
 
-- [ ] 8. Add keyboard shortcuts for volume control
+- [x] 8. Add keyboard shortcuts for volume control
   - Implement global keyboard event listeners in AudioPlayer component
   - Add Up Arrow to increase volume by 5%
   - Add Down Arrow to decrease volume by 5%
   - Add M key to toggle mute
-
-
   - Prevent shortcuts when input fields or search overlay are focused
   - _Requirements: 9_
 
-- [ ] 8.1 Implement keyboard event listeners in AudioPlayer
+- [x] 8.1 Implement keyboard event listeners in AudioPlayer
   - Add useEffect hook in AudioPlayer.tsx component
   - Listen for keydown events on window/document
   - Check if search overlay is open or input fields are focused (document.activeElement)

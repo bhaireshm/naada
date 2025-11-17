@@ -14,11 +14,25 @@ const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefi
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch user's favorites on mount
   useEffect(() => {
-    refreshFavorites();
+    // Only fetch if user might be authenticated (check for Firebase auth state)
+    const checkAuthAndFetch = async () => {
+      try {
+        const { getIdToken } = await import('@/lib/firebase');
+        const token = await getIdToken();
+        if (token) {
+          refreshFavorites();
+        }
+      } catch (error) {
+        // User not authenticated, skip fetching favorites
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuthAndFetch();
   }, []);
 
   // Refresh favorites from API
@@ -32,7 +46,10 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       const songIds = new Set(favoritesData.favorites.map((fav: any) => fav.song.id));
       setFavorites(songIds);
     } catch (error) {
-      console.error('Failed to fetch favorites:', error);
+      // Silently fail if user is not authenticated
+      if (error instanceof Error && !error.message.includes('not authenticated')) {
+        console.error('Failed to fetch favorites:', error);
+      }
     } finally {
       setIsLoading(false);
     }
