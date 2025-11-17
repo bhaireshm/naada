@@ -326,7 +326,7 @@ function LibraryPageContent() {
                         <Group gap="xs" wrap="nowrap">
                           <ActionIcon
                             variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
-                            color="blue"
+                            color="accent1"
                             onClick={() => handlePlaySong(song, index)}
                             aria-label={`Play ${song.title}`}
                           >
@@ -420,7 +420,7 @@ function LibraryPageContent() {
                     <Group gap="xs" wrap="nowrap">
                       <ActionIcon
                         variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
-                        color="blue"
+                        color="accent1"
                         size={44}
                         onClick={() => handlePlaySong(song, index)}
                         aria-label={`Play ${song.title}`}

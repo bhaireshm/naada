@@ -55,9 +55,10 @@ export default function Navigation() {
       <div
         style={{
           height: '100%',
-          background: `linear-gradient(135deg, ${theme.colors.accent1[7]} 0%, ${theme.colors.tertiary[6]} 100%)`,
+          background: `linear-gradient(135deg, ${theme.colors.accent1[7]} 0%, ${theme.colors.tertiary[6]} 100())`,
           boxShadow: theme.shadows.lg,
           position: 'relative',
+          zIndex: 200,
         }}
       >
         {/* Decorative overlay */}
@@ -73,7 +74,7 @@ export default function Navigation() {
           }}
         />
         
-        <Group h="100%" px={theme.spacing.md} justify="space-between" style={{ position: 'relative', zIndex: 1 }}>
+        <Group h="100%" px={theme.spacing.md} justify="space-between" style={{ position: 'relative', zIndex: 201 }}>
           {/* Logo and Burger Menu */}
           <Group gap={theme.spacing.md}>
             {user && (
