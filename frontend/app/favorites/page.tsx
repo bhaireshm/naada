@@ -94,7 +94,7 @@ function FavoritesPageContent() {
   };
 
   return (
-    <Box pb={80}>
+    <Box pb={90}>
       <Container size="xl" py="xl">
         {/* Header */}
         <Box

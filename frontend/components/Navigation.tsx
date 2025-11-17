@@ -332,6 +332,8 @@ export default function Navigation() {
           </Group>
         }
         hiddenFrom="md"
+        zIndex={1000}
+        overlayProps={{ opacity: 0.5, blur: 4 }}
       >
         <NavLink
           label="Library"

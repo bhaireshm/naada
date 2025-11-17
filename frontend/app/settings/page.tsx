@@ -5,7 +5,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 function SettingsPageContent() {
   return (
-    <Box pb={80}>
+    <Box pb={90}>
       <Container size="lg" py="xl">
         {/* Page Header */}
         <Stack gap="xs" mb="xl">

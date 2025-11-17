@@ -133,7 +133,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 64,
+          height: 72,
           background: playerBg,
           backdropFilter: 'blur(20px)',
           borderTop: `2px solid ${theme.colors.accent1[3]}`,
@@ -158,11 +158,11 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 64,
+        height: 72,
         background: playerBg,
         backdropFilter: 'blur(20px)',
         borderTop: `2px solid ${theme.colors.accent1[3]}`,
-        padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+        padding: `${theme.spacing.sm} ${theme.spacing.md}`,
         zIndex: 100,
         boxShadow: theme.shadows.md,
       }}
@@ -375,114 +375,120 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
       </Group>
 
       {/* Mobile Layout */}
-      <Group justify="space-between" align="center" hiddenFrom="md" h="100%" wrap="nowrap">
-        {/* Album Art and Song Info */}
-        <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
-          <Box
-            style={{
-              borderRadius: theme.radius.sm,
-              overflow: 'hidden',
-              boxShadow: theme.shadows.xs,
-            }}
-          >
-            <Image
-              src={currentSong.albumArt || null}
-              alt={currentSong.title}
-              w={36}
-              h={36}
-              radius="sm"
-              fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' fill='%23e0e0e0'/%3E%3Cpath d='M12 9v18l13-9z' fill='%23999'/%3E%3C/svg%3E"
-            />
-          </Box>
-          <Box style={{ minWidth: 0, flex: 1 }}>
-            <Text 
-              size="xs" 
-              fw={600} 
-              truncate 
-              c={textColor}
-              style={{ fontSize: '12px' }}
+      <Box hiddenFrom="md" h="100%">
+        <Group justify="space-between" align="center" h="100%" wrap="nowrap" gap="xs">
+          {/* Album Art and Song Info */}
+          <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
+            <Box
+              style={{
+                borderRadius: theme.radius.sm,
+                overflow: 'hidden',
+                boxShadow: theme.shadows.xs,
+                flexShrink: 0,
+              }}
             >
-              {currentSong.title}
-            </Text>
-            <Text 
-              size="xs" 
-              truncate 
-              c="dimmed"
-              style={{ fontSize: '10px' }}
+              <Image
+                src={currentSong.albumArt || null}
+                alt={currentSong.title}
+                w={40}
+                h={40}
+                radius="sm"
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23e0e0e0'/%3E%3Cpath d='M14 10v20l14-10z' fill='%23999'/%3E%3C/svg%3E"
+              />
+            </Box>
+            <Box style={{ minWidth: 0, flex: 1 }}>
+              <Group gap={4} wrap="nowrap" align="center">
+                <Text 
+                  size="xs" 
+                  fw={600} 
+                  truncate 
+                  c={textColor}
+                  style={{ fontSize: '12px', flex: 1, minWidth: 0 }}
+                >
+                  {currentSong.title}
+                </Text>
+                <FavoriteButton songId={currentSong.id} size="sm" />
+              </Group>
+              <Text 
+                size="xs" 
+                truncate 
+                c="dimmed"
+                style={{ fontSize: '10px' }}
+              >
+                {currentSong.artist}
+              </Text>
+            </Box>
+          </Group>
+
+          {/* Playback Controls */}
+          <Group gap={6} wrap="nowrap">
+            <ActionIcon
+              variant="light"
+              color="accent1"
+              size={36}
+              radius="md"
+              onClick={previous}
+              disabled={!hasPrevious}
+              aria-label="Previous song"
+              styles={{
+                root: {
+                  border: `1px solid ${borderColor}`,
+                  '&:hover': {
+                    backgroundColor: hoverBg,
+                  },
+                  transition: `all ${theme.other.transitionDuration.fast} cubic-bezier(0.4, 0, 0.2, 1)`,
+                },
+              }}
             >
-              {currentSong.artist}
-            </Text>
-          </Box>
-        </Group>
+              <IconPlayerSkipBack size={16} stroke={2.5} />
+            </ActionIcon>
 
-        {/* Playback Controls */}
-        <Group gap={4}>
-          <ActionIcon
-            variant="light"
-            color="accent1"
-            size={32}
-            radius="md"
-            onClick={previous}
-            disabled={!hasPrevious}
-            aria-label="Previous song"
-            styles={{
-              root: {
-                border: `1px solid ${borderColor}`,
-                '&:hover': {
-                  backgroundColor: hoverBg,
+            <ActionIcon
+              variant="gradient"
+              gradient={{ from: 'accent1.7', to: 'secondary.7', deg: 135 }}
+              size={42}
+              radius="xl"
+              onClick={togglePlayPause}
+              disabled={loading}
+              loading={loading}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+              styles={{
+                root: {
+                  boxShadow: theme.shadows.md,
+                  transition: `all ${theme.other.transitionDuration.fast} cubic-bezier(0.4, 0, 0.2, 1)`,
                 },
-                transition: `all ${theme.other.transitionDuration.fast} cubic-bezier(0.4, 0, 0.2, 1)`,
-              },
-            }}
-          >
-            <IconPlayerSkipBack size={14} stroke={2.5} />
-          </ActionIcon>
+              }}
+            >
+              {isPlaying ? (
+                <IconPlayerPause size={20} stroke={2.5} />
+              ) : (
+                <IconPlayerPlay size={20} stroke={2.5} style={{ marginLeft: '2px' }} />
+              )}
+            </ActionIcon>
 
-          <ActionIcon
-            variant="gradient"
-            gradient={{ from: 'accent1.7', to: 'secondary.7', deg: 135 }}
-            size={38}
-            radius="xl"
-            onClick={togglePlayPause}
-            disabled={loading}
-            loading={loading}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-            styles={{
-              root: {
-                boxShadow: theme.shadows.md,
-                transition: `all ${theme.other.transitionDuration.fast} cubic-bezier(0.4, 0, 0.2, 1)`,
-              },
-            }}
-          >
-            {isPlaying ? (
-              <IconPlayerPause size={18} stroke={2.5} />
-            ) : (
-              <IconPlayerPlay size={18} stroke={2.5} style={{ marginLeft: '2px' }} />
-            )}
-          </ActionIcon>
-
-          <ActionIcon
-            variant="light"
-            color="accent1"
-            size={32}
-            radius="md"
-            onClick={next}
-            disabled={!hasNext}
-            aria-label="Next song"
-            styles={{
-              root: {
-                border: `1px solid ${borderColor}`,
-                '&:hover': {
-                  backgroundColor: hoverBg,
+            <ActionIcon
+              variant="light"
+              color="accent1"
+              size={36}
+              radius="md"
+              onClick={next}
+              disabled={!hasNext}
+              aria-label="Next song"
+              styles={{
+                root: {
+                  border: `1px solid ${borderColor}`,
+                  '&:hover': {
+                    backgroundColor: hoverBg,
+                  },
+                  transition: `all ${theme.other.transitionDuration.fast} cubic-bezier(0.4, 0, 0.2, 1)`,
                 },
-                transition: `all ${theme.other.transitionDuration.fast} cubic-bezier(0.4, 0, 0.2, 1)`,
-              },
-            }}
-          >
-            <IconPlayerSkipForward size={14} stroke={2.5} />
-          </ActionIcon>
+              }}
+            >
+              <IconPlayerSkipForward size={16} stroke={2.5} />
+            </ActionIcon>
+          </Group>
         </Group>
-      </Group>
+      </Box>
     </Box>
   );
 }

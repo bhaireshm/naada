@@ -64,7 +64,7 @@ export default function FavoriteButton({ songId, size = 'md', showLabel = false 
         }}
       >
         {favorited ? (
-          <IconHeartFilled size={iconSize} style={{ color: '#e91e63' }} />
+          <IconHeartFilled size={iconSize} style={{ color: '#ff6b9d' }} />
         ) : (
           <IconHeart size={iconSize} />
         )}
