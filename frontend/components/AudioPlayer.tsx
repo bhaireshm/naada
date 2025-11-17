@@ -40,10 +40,12 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     loading,
     queue,
     currentIndex,
+    isMuted,
     play,
     pause,
     seek,
     setVolume,
+    toggleMute,
     loadSong,
     next,
     previous,
@@ -73,6 +75,36 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     }
   }, [currentSong, onSongChange]);
 
+  // Keyboard shortcuts for volume control
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if user is typing in an input field
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          setVolume(Math.min(1, volume + 0.05));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setVolume(Math.max(0, volume - 0.05));
+          break;
+        case 'm':
+        case 'M':
+          e.preventDefault();
+          toggleMute();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [volume, setVolume, toggleMute]);
+
 
 
   const togglePlayPause = () => {
@@ -84,10 +116,10 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
   };
 
   const renderVolumeIcon = (size: number) => {
-    if (volume === 0) return <IconVolumeOff size={size} />;
-    if (volume < 0.33) return <IconVolume3 size={size} />;
+    if (isMuted || volume === 0) return <IconVolumeOff size={size} />;
+    if (volume < 0.33) return <IconVolume size={size} />;
     if (volume < 0.66) return <IconVolume2 size={size} />;
-    return <IconVolume size={size} />;
+    return <IconVolume3 size={size} />;
   };
 
   const hasNext = currentIndex >= 0 && currentIndex < queue.length - 1;
@@ -291,8 +323,8 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             color="accent1"
             size={28}
             radius="md"
-            onClick={() => setVolume(volume === 0 ? 1 : 0)}
-            aria-label="Toggle mute"
+            onClick={toggleMute}
+            aria-label={isMuted ? 'Unmute' : 'Mute'}
             styles={{
               root: {
                 border: `1px solid ${borderColor}`,
