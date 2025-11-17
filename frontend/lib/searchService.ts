@@ -171,7 +171,6 @@ class SearchService {
           albumMap.set(key, {
             artist: song.artist,
             songCount: 1,
-            year: song.year,
           });
         }
       }
