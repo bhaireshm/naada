@@ -4,6 +4,7 @@ import { Notifications } from "@mantine/notifications";
 import ThemeProvider from "@/components/ThemeProvider";
 import ClientLayout from "@/components/ClientLayout";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./globals.css";
@@ -65,6 +66,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Notifications position="top-right" />
           <ServiceWorkerRegistration />
+          <InstallPrompt />
           <ClientLayout>{children}</ClientLayout>
         </ThemeProvider>
       </body>

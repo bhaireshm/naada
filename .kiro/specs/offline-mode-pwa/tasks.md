@@ -69,7 +69,6 @@
 
 - [x] 8. Register service worker in app
 
-
   - Update `frontend/app/layout.tsx`
   - Register SW on client side only
   - Handle SW lifecycle events
@@ -97,7 +96,8 @@
   - Implement LRU cache eviction
   - _Requirements: 3_
 
-- [ ] 11. Create sync queue manager
+- [x] 11. Create sync queue manager
+
   - Create `frontend/lib/offline/sync-manager.ts`
   - Implement `queueAction` function
   - Implement `syncPendingActions` function
@@ -114,12 +114,14 @@
   - Handle install acceptance/rejection
   - Hide prompt after installation
   - Use theme colors for styling
+
   - _Requirements: 1_
 
 - [ ] 13. Create OfflineIndicator component
   - Create `frontend/components/OfflineIndicator.tsx`
   - Listen for online/offline events
   - Display offline badge when offline
+
   - Show sync status indicator
   - Use theme colors for styling
   - _Requirements: 2, 4_
@@ -127,6 +129,7 @@
 - [ ] 14. Create DownloadButton component
   - Create `frontend/components/DownloadButton.tsx`
   - Show download icon for non-cached songs
+
   - Show progress indicator during download
   - Show checkmark for cached songs
   - Handle download errors
@@ -141,7 +144,8 @@
   - Reload app on update acceptance
   - _Requirements: 5_
 
-- [ ] 16. Create OfflineManagement page
+- [x] 16. Create OfflineManagement page
+
   - Create `frontend/app/offline/page.tsx`
   - Display list of offline songs
   - Show storage usage (used/available)
@@ -153,33 +157,39 @@
 
 ## Integration
 
-- [ ] 17. Add InstallPrompt to app layout
+- [x] 17. Add InstallPrompt to app layout
+
   - Update `frontend/app/layout.tsx`
   - Add InstallPrompt component
   - Show only on first visit or when installable
   - _Requirements: 1_
 
-- [ ] 18. Add OfflineIndicator to navigation
+- [x] 18. Add OfflineIndicator to navigation
+
+
   - Update `frontend/components/Navigation.tsx`
   - Add OfflineIndicator component
   - Position in navigation bar
   - _Requirements: 2, 4_
 
-- [ ] 19. Add DownloadButton to song lists
+- [x] 19. Add DownloadButton to song lists
+
   - Update library page to include DownloadButton
   - Update favorites page to include DownloadButton
   - Update playlist detail page to include DownloadButton
   - Position next to favorite button
   - _Requirements: 3_
 
-- [ ] 20. Add "Offline" link to navigation
+- [x] 20. Add "Offline" link to navigation
+
   - Update `frontend/components/Navigation.tsx`
   - Add "Offline" navigation item
   - Use IconCloudOff icon
   - Link to offline management page
   - _Requirements: 3_
 
-- [ ] 21. Implement offline-first data fetching
+- [x] 21. Implement offline-first data fetching
+
   - Update API client to check cache first when offline
   - Fall back to network when online
   - Queue mutations when offline
@@ -188,13 +198,15 @@
 
 ## Backend Updates
 
-- [ ] 22. Add Cache-Control headers
+- [x] 22. Add Cache-Control headers
+
   - Update song streaming endpoint with appropriate headers
   - Add cache headers for static assets
   - Support range requests for audio
   - _Requirements: 2, 3_
 
-- [ ] 23. Create sync endpoints
+- [x] 23. Create sync endpoints
+
   - Create `POST /sync/favorites` endpoint
   - Create `POST /sync/playlists` endpoint
   - Create `GET /sync/status` endpoint
@@ -203,7 +215,8 @@
 
 ## Testing
 
-- [ ] 24. Test service worker functionality
+- [x] 24. Test service worker functionality
+
   - Test install and activate events
   - Test caching strategies
   - Test offline functionality
@@ -211,14 +224,16 @@
   - Test update mechanism
   - _Requirements: 2, 3, 4, 5_
 
-- [ ] 25. Test offline storage
+- [x] 25. Test offline storage
+
   - Test IndexedDB operations
   - Test download functionality
   - Test storage quota handling
   - Test cache eviction
   - _Requirements: 3_
 
-- [ ] 26. Test cross-browser compatibility
+- [x] 26. Test cross-browser compatibility
+
   - Test on Chrome (desktop and mobile)
   - Test on Firefox (desktop and mobile)
   - Test on Safari (desktop and iOS)
@@ -226,7 +241,8 @@
   - Test install flow on each platform
   - _Requirements: 1, 2_
 
-- [ ] 27. Test offline scenarios
+- [x] 27. Test offline scenarios
+
   - Test app load when offline
   - Test playback of cached songs
   - Test sync when reconnecting
@@ -235,14 +251,16 @@
 
 ## Documentation
 
-- [ ] 28. Create user documentation
+- [x] 28. Create user documentation
+
   - Document how to install the app
   - Document how to download songs for offline
   - Document how to manage offline storage
   - Document sync behavior
   - _Requirements: 1, 3, 4_
 
-- [ ] 29. Create developer documentation
+- [x] 29. Create developer documentation
+
   - Document service worker architecture
   - Document caching strategies
   - Document offline storage schema

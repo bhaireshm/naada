@@ -24,10 +24,12 @@ import {
   IconSettings,
   IconHeart,
   IconCompass,
+  IconCloudOff,
 } from '@tabler/icons-react';
 import { useAuth } from '@/hooks/useAuth';
 import SearchInput from '@/components/SearchInput';
 import UserAvatar from '@/components/UserAvatar';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
 
 /**
  * Navigation component with links to main pages and user authentication display
@@ -241,12 +243,39 @@ export default function Navigation() {
                 >
                   Discover
                 </Button>
+                <Button
+                  variant="subtle"
+                  leftSection={<IconCloudOff size={18} />}
+                  onClick={() => router.push('/offline')}
+                  size="md"
+                  radius="md"
+                  styles={{
+                    root: {
+                      color: theme.colors.primary[0],
+                      fontWeight: 500,
+                      transition: 'all 150ms ease',
+                      position: 'relative',
+                      borderBottom: isActive('/offline') 
+                        ? `2px solid ${theme.colors.primary[0]}` 
+                        : '2px solid transparent',
+                      borderRadius: isActive('/offline') 
+                        ? `${theme.radius.md} ${theme.radius.md} 0 0` 
+                        : theme.radius.md,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      },
+                    },
+                  }}
+                >
+                  Offline
+                </Button>
               </Group>
             </Group>
           )}
 
-          {/* Right Side: User Menu or Auth Buttons */}
+          {/* Right Side: Offline Indicator, User Menu or Auth Buttons */}
           <Group gap={theme.spacing.xs}>
+            {user && <OfflineIndicator />}
             {user ? (
               <Menu shadow="sm" width={180} position="bottom-end" offset={4}>
                 <Menu.Target>
@@ -420,6 +449,20 @@ export default function Navigation() {
           active={isActive('/discover')}
           onClick={() => {
             router.push('/discover');
+            closeDrawer();
+          }}
+          style={{
+            borderRadius: theme.radius.md,
+            marginBottom: theme.spacing.sm,
+          }}
+        />
+        <NavLink
+          label="Offline"
+          description="Manage offline songs"
+          leftSection={<IconCloudOff size={20} />}
+          active={isActive('/offline')}
+          onClick={() => {
+            router.push('/offline');
             closeDrawer();
           }}
           style={{
