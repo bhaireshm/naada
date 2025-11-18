@@ -138,6 +138,7 @@
   - Handle download errors
   - Use theme colors for styling
 
+
   - _Requirements: 3_
 
 - [ ] 15. Create UpdateNotification component
