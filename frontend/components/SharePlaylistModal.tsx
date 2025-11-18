@@ -200,12 +200,12 @@ export default function SharePlaylistModal({
                 value={shareLink}
                 readOnly
                 style={{ flex: 1 }}
-                size="sm"
+                size="md"
               />
               <ActionIcon
                 variant="light"
                 color="accent1"
-                size={36}
+                size="lg"
                 onClick={handleCopyLink}
               >
                 {copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
@@ -226,12 +226,12 @@ export default function SharePlaylistModal({
                 value={collaboratorInput}
                 onChange={(e) => setCollaboratorInput(e.target.value)}
                 style={{ flex: 1 }}
-                size="sm"
+                size="md"
               />
               <Button
                 onClick={handleAddCollaborator}
                 disabled={!collaboratorInput.trim() || loading}
-                size="sm"
+                size="md"
               >
                 Add
               </Button>

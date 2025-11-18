@@ -66,6 +66,7 @@ interface SearchContextValue {
   isLoading: boolean;
   searchHistory: SearchHistoryItem[];
   selectedIndex: number;
+  error: string | null;
 
   // Actions
   setQuery: (query: string) => void;
@@ -76,6 +77,7 @@ interface SearchContextValue {
   clearHistory: () => void;
   addToHistory: (query: string, filter?: SearchFilter) => void;
   setSelectedIndex: (index: number) => void;
+  retrySearch: () => Promise<void>;
 }
 
 const SearchContext = createContext<SearchContextValue | undefined>(undefined);
@@ -94,6 +96,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Load search history from localStorage on mount
   useEffect(() => {
@@ -158,9 +161,19 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       clearTimeout(debounceTimer);
     }
 
+    // Clear previous error
+    setError(null);
+
     // If query is empty, clear results
     if (!searchQuery.trim()) {
       setResults(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate query length
+    if (searchQuery.length > 100) {
+      setError('Search query is too long (maximum 100 characters)');
       setIsLoading(false);
       return;
     }
@@ -185,13 +198,20 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         if (cachedResults && !newAbortController.signal.aborted) {
           setResults(cachedResults);
           setIsLoading(false);
+          setError(null);
           return;
         }
 
         // Import search function dynamically to avoid circular dependencies
         const { search } = await import('@/lib/api');
 
+        // Set timeout for search request
+        const timeoutId = setTimeout(() => {
+          newAbortController.abort();
+        }, 10000); // 10 second timeout
+
         const searchResults = await search(searchQuery, searchFilter);
+        clearTimeout(timeoutId);
         
         // Only update if not aborted
         if (!newAbortController.signal.aborted) {
@@ -200,15 +220,18 @@ export function SearchProvider({ children }: { children: ReactNode }) {
           searchService.setCachedResults(cacheKey, searchResults);
           // Add to history after successful search
           addToHistory(searchQuery, searchFilter);
+          setError(null);
         }
       } catch (error) {
         // Ignore abort errors
         if (error instanceof Error && error.name === 'AbortError') {
+          setError('Search request timed out. Please try again.');
           return;
         }
         console.error('Search failed:', error);
         if (!newAbortController.signal.aborted) {
           setResults(null);
+          setError(error instanceof Error ? error.message : 'Search failed. Please try again.');
         }
       } finally {
         if (!newAbortController.signal.aborted) {
@@ -219,6 +242,13 @@ export function SearchProvider({ children }: { children: ReactNode }) {
 
     setDebounceTimer(timer);
   }, [debounceTimer, abortController, activeFilter, addToHistory]);
+
+  // Retry search
+  const retrySearch = useCallback(async () => {
+    if (query) {
+      await performSearch(query, activeFilter);
+    }
+  }, [query, activeFilter, performSearch]);
 
   // Clear search
   const clearSearch = useCallback(() => {
@@ -240,6 +270,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     isLoading,
     searchHistory,
     selectedIndex,
+    error,
     setQuery,
     setIsOpen,
     setActiveFilter,
@@ -248,6 +279,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     clearHistory,
     addToHistory,
     setSelectedIndex,
+    retrySearch,
   };
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;

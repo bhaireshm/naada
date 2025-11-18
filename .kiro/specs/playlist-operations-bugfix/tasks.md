@@ -11,7 +11,8 @@
   - **Property 3: Error logging completeness**
   - **Validates: Requirements 4.1, 4.2, 4.3, 4.4**
 
-- [ ] 2. Fix addSongToPlaylist controller
+- [x] 2. Fix addSongToPlaylist controller
+
   - Review and enhance error handling in addSongToPlaylist function
   - Add detailed error logging before each error response
   - Verify permission checks are working correctly
@@ -27,7 +28,8 @@
   - **Property 2: Permission enforcement**
   - **Validates: Requirements 1.3, 2.3, 3.2**
 
-- [ ] 3. Fix removeSongFromPlaylist controller
+- [x] 3. Fix removeSongFromPlaylist controller
+
   - Review and enhance error handling in removeSongFromPlaylist function
   - Add detailed error logging before each error response
   - Verify song removal logic handles edge cases
@@ -38,14 +40,17 @@
   - **Property 4: Idempotent song removal**
   - **Validates: Requirements 2.2**
 
-- [ ] 4. Fix updateVisibility controller
+- [x] 4. Fix updateVisibility controller
+
   - Review and enhance error handling in updateVisibility function
   - Add detailed error logging before each error response
   - Verify ownership validation is working correctly
   - Test visibility value validation
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 5. Enhance frontend API client error handling
+- [x] 5. Enhance frontend API client error handling
+
+
   - Review parseResponse function for proper error parsing
   - Add console logging for all API errors with context
   - Ensure ApiError instances include all error details

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { Modal, TextInput, Tabs, Stack, Text, Loader, Center, Box, useMantineTheme } from '@mantine/core';
-import { IconSearch, IconMusic, IconUser, IconDisc, IconPlaylist, IconClock, IconX } from '@tabler/icons-react';
+import { Modal, TextInput, Tabs, Stack, Text, Loader, Center, Box, useMantineTheme, Alert, Button } from '@mantine/core';
+import { IconSearch, IconMusic, IconUser, IconDisc, IconPlaylist, IconClock, IconAlertCircle, IconRefresh } from '@tabler/icons-react';
 import { useSearch, SearchFilter } from '@/contexts/SearchContext';
 import SearchResultItem from '@/components/SearchResultItem';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,8 @@ export default function SearchOverlay() {
     clearHistory,
     selectedIndex,
     setSelectedIndex,
+    error,
+    retrySearch,
   } = useSearch();
   
   const theme = useMantineTheme();
@@ -253,6 +255,31 @@ export default function SearchOverlay() {
         }}
         p="md"
       >
+        {/* Error State */}
+        {error && !isLoading && (
+          <Alert
+            icon={<IconAlertCircle size={16} />}
+            title="Search Error"
+            color="red"
+            withCloseButton
+            onClose={() => {}}
+            mb="md"
+          >
+            <Stack gap="sm">
+              <Text size="sm">{error}</Text>
+              <Button
+                size="xs"
+                variant="light"
+                color="red"
+                leftSection={<IconRefresh size={14} />}
+                onClick={retrySearch}
+              >
+                Retry Search
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+
         {/* Loading State */}
         {isLoading && (
           <Center py="xl">
