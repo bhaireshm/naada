@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  signInWithPopup,
+  GoogleAuthProvider,
   User,
   UserCredential,
 } from 'firebase/auth';
@@ -85,3 +87,27 @@ export const getIdToken = async (): Promise<string | null> => {
 export const getCurrentUser = (): User | null => {
   return auth.currentUser;
 };
+
+// Google Sign-In provider
+const googleProvider = new GoogleAuthProvider();
+
+// Helper function to sign in/up with Google
+export const signInWithGoogle = async (): Promise<UserCredential> => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result;
+  } catch (error: any) {
+    // Handle specific errors
+    if (error.code === 'auth/popup-blocked') {
+      throw new Error('Popup was blocked by the browser. Please allow popups for this site.');
+    } else if (error.code === 'auth/popup-closed-by-user') {
+      throw new Error('Sign-in was cancelled.');
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      throw new Error('Another sign-in popup is already open.');
+    }
+    throw error;
+  }
+};
+
+// Alias for consistency (Firebase handles both signup and signin the same way)
+export const signUpWithGoogle = signInWithGoogle;

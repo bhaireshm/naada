@@ -3,15 +3,19 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { Container, Paper, Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack, Box } from '@mantine/core';
+import { Container, Paper, Title, Text, TextInput, PasswordInput, Button, Alert, Anchor, Stack, Box, Divider } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useState } from 'react';
+import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+import { signUpWithGoogle } from '@/lib/firebase';
+import { getUserProfile } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { signUp, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -36,6 +40,31 @@ export default function RegisterPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign up';
       setError(errorMessage);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setError(null);
+    setGoogleLoading(true);
+
+    try {
+      await signUpWithGoogle();
+      
+      // Try to get/create user profile on backend
+      try {
+        await getUserProfile();
+      } catch {
+        // Profile might not exist yet, that's okay
+        console.log('Profile will be created on first API call');
+      }
+
+      // Redirect to library
+      router.push('/library');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sign up with Google';
+      setError(errorMessage);
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -81,13 +110,27 @@ export default function RegisterPage() {
               </Text>
             </div>
 
+            {error && (
+              <Alert icon={<IconAlertCircle size={16} />} color="red" variant="light">
+                {error}
+              </Alert>
+            )}
+
+            <GoogleSignInButton
+              onClick={handleGoogleSignUp}
+              loading={googleLoading}
+              variant="signup"
+            />
+
+            <Divider label="OR" labelPosition="center" />
+
             <form onSubmit={form.onSubmit(handleSubmit)}>
               <Stack gap="md">
                 <TextInput
                   label="Email Address"
                   placeholder="you@example.com"
                   required
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                   size="md"
                   {...form.getInputProps('email')}
                 />
@@ -96,7 +139,7 @@ export default function RegisterPage() {
                   label="Password"
                   placeholder="••••••••"
                   required
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                   size="md"
                   {...form.getInputProps('password')}
                 />
@@ -105,21 +148,16 @@ export default function RegisterPage() {
                   label="Confirm Password"
                   placeholder="••••••••"
                   required
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                   size="md"
                   {...form.getInputProps('confirmPassword')}
                 />
-
-                {error && (
-                  <Alert icon={<IconAlertCircle size={16} />} color="red" variant="light">
-                    {error}
-                  </Alert>
-                )}
 
                 <Button
                   type="submit"
                   fullWidth
                   loading={loading}
+                  disabled={googleLoading}
                   variant="gradient"
                   gradient={{ from: 'accent1.7', to: 'accent2.7', deg: 135 }}
                 >
