@@ -55,37 +55,78 @@ export async function verifyToken(
       let user = await User.findOne({ uid: decodedToken.uid });
       
       if (!user) {
-        // Check if user with same email exists (for Google sign-in linking)
-        const existingUserByEmail = await User.findOne({ email: decodedToken.email });
-        
-        if (existingUserByEmail && decodedToken.firebase?.sign_in_provider === 'google.com') {
-          // Link Google account to existing email account
-          existingUserByEmail.googleId = decodedToken.uid;
-          if (!existingUserByEmail.authProviders.includes('google')) {
-            existingUserByEmail.authProviders.push('google');
-          }
-          // Update profile info from Google if not set
-          if (!existingUserByEmail.displayName && decodedToken.name) {
-            existingUserByEmail.displayName = decodedToken.name;
-          }
-          if (!existingUserByEmail.avatarUrl && decodedToken.picture) {
-            existingUserByEmail.avatarUrl = decodedToken.picture;
-          }
-          existingUserByEmail.updatedAt = new Date();
-          await existingUserByEmail.save();
+        // For Google sign-in, check if this Google account is already linked to an existing user
+        if (decodedToken.firebase?.sign_in_provider === 'google.com') {
+          // First check by Google email (for linked accounts)
+          const existingUserByGoogleEmail = await User.findOne({ 
+            googleEmail: decodedToken.email 
+          });
           
-          // Use the existing user's UID for this request
-          req.userId = existingUserByEmail.uid;
+          if (existingUserByGoogleEmail) {
+            // User has manually linked this Google account - authenticate to that account
+            req.userId = existingUserByGoogleEmail.uid;
+            user = existingUserByGoogleEmail;
+          } else {
+            // Check by googleId (for accounts created with Google)
+            const existingUserByGoogleId = await User.findOne({ googleId: decodedToken.uid });
+            
+            if (existingUserByGoogleId) {
+              // User created account with Google
+              req.userId = existingUserByGoogleId.uid;
+              user = existingUserByGoogleId;
+            } else {
+              // Check if user with same email exists (for automatic linking on first Google sign-in)
+              const existingUserByEmail = await User.findOne({ email: decodedToken.email });
+              
+              if (existingUserByEmail) {
+                // This is a user who created account with email/password and is now signing in with Google
+                // Automatically link the Google account
+                existingUserByEmail.googleId = decodedToken.uid;
+                existingUserByEmail.googleEmail = decodedToken.email;
+                if (!existingUserByEmail.authProviders.includes('google')) {
+                  existingUserByEmail.authProviders.push('google');
+                }
+                // Update profile info from Google if not set
+                if (!existingUserByEmail.displayName && decodedToken.name) {
+                  existingUserByEmail.displayName = decodedToken.name;
+                }
+                if (!existingUserByEmail.avatarUrl && decodedToken.picture) {
+                  existingUserByEmail.avatarUrl = decodedToken.picture;
+                }
+                existingUserByEmail.updatedAt = new Date();
+                await existingUserByEmail.save();
+                
+                // Use the existing user's UID for this request
+                req.userId = existingUserByEmail.uid;
+                user = existingUserByEmail;
+              } else {
+                // Create new user record (first time Google sign-in with new email)
+                user = new User({
+                  uid: decodedToken.uid,
+                  email: decodedToken.email || '',
+                  displayName: decodedToken.name || '',
+                  avatarUrl: decodedToken.picture || '',
+                  googleId: decodedToken.uid,
+                  googleEmail: decodedToken.email,
+                  authProviders: ['google'],
+                  preferences: {
+                    theme: 'system',
+                    language: 'en',
+                    notifications: true,
+                  },
+                });
+                await user.save();
+              }
+            }
+          }
         } else {
-          // Create new user record
-          const authProvider = decodedToken.firebase?.sign_in_provider === 'google.com' ? 'google' : 'email';
+          // Create new user record for email/password auth
           user = new User({
             uid: decodedToken.uid,
             email: decodedToken.email || '',
             displayName: decodedToken.name || '',
             avatarUrl: decodedToken.picture || '',
-            googleId: authProvider === 'google' ? decodedToken.uid : undefined,
-            authProviders: [authProvider],
+            authProviders: ['email'],
             preferences: {
               theme: 'system',
               language: 'en',
@@ -105,9 +146,13 @@ export async function verifyToken(
             updated = true;
           }
           
-          // Update Google ID if not set
+          // Update Google ID and email if not set
           if (!user.googleId) {
             user.googleId = decodedToken.uid;
+            updated = true;
+          }
+          if (!user.googleEmail && decodedToken.email) {
+            user.googleEmail = decodedToken.email;
             updated = true;
           }
           

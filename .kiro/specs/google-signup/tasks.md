@@ -51,7 +51,6 @@
 
 - [x] 7. Update User model for Google authentication
 
-
   - Add googleId field to User schema
   - Add authProviders array field
   - Create migration for existing users

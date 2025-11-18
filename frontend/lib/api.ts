@@ -526,6 +526,9 @@ export interface UserProfile {
   displayName?: string;
   bio?: string;
   avatarUrl?: string;
+  googleId?: string;
+  googleEmail?: string;
+  authProviders?: ('email' | 'google')[];
   preferences?: {
     theme?: 'light' | 'dark' | 'system';
     language?: string;
@@ -610,4 +613,30 @@ export async function updateUserSettings(settings: Partial<UserSettings>): Promi
   });
   const data = await parseResponse<{ settings: UserSettings }>(response);
   return data.settings;
+}
+
+/**
+ * Link Google account to current user profile
+ */
+export async function linkGoogleAccount(googleIdToken: string): Promise<UserProfile> {
+  const response = await makeAuthenticatedRequest('/users/me/link-google', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ googleIdToken }),
+  });
+  const data = await parseResponse<{ user: UserProfile }>(response);
+  return data.user;
+}
+
+/**
+ * Unlink Google account from current user profile
+ */
+export async function unlinkGoogleAccount(): Promise<UserProfile> {
+  const response = await makeAuthenticatedRequest('/users/me/link-google', {
+    method: 'DELETE',
+  });
+  const data = await parseResponse<{ user: UserProfile }>(response);
+  return data.user;
 }

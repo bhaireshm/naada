@@ -96,13 +96,14 @@ export const signInWithGoogle = async (): Promise<UserCredential> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
     return result;
-  } catch (error: any) {
+  } catch (error) {
     // Handle specific errors
-    if (error.code === 'auth/popup-blocked') {
+    const firebaseError = error as { code?: string };
+    if (firebaseError.code === 'auth/popup-blocked') {
       throw new Error('Popup was blocked by the browser. Please allow popups for this site.');
-    } else if (error.code === 'auth/popup-closed-by-user') {
+    } else if (firebaseError.code === 'auth/popup-closed-by-user') {
       throw new Error('Sign-in was cancelled.');
-    } else if (error.code === 'auth/cancelled-popup-request') {
+    } else if (firebaseError.code === 'auth/cancelled-popup-request') {
       throw new Error('Another sign-in popup is already open.');
     }
     throw error;
@@ -111,3 +112,36 @@ export const signInWithGoogle = async (): Promise<UserCredential> => {
 
 // Alias for consistency (Firebase handles both signup and signin the same way)
 export const signUpWithGoogle = signInWithGoogle;
+
+// Helper function to link Google account to current user (for account linking)
+export const linkGoogleAccountToCurrentUser = async (): Promise<UserCredential> => {
+  try {
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
+      throw new Error('No user is currently signed in');
+    }
+
+    // Use linkWithPopup to link Google to the current user
+    const { linkWithPopup } = await import('firebase/auth');
+    const result = await linkWithPopup(currentUser, googleProvider);
+    return result;
+  } catch (error) {
+    // Handle specific errors
+    const firebaseError = error as { code?: string };
+    if (firebaseError.code === 'auth/popup-blocked') {
+      throw new Error('Popup was blocked by the browser. Please allow popups for this site.');
+    } else if (firebaseError.code === 'auth/popup-closed-by-user') {
+      throw new Error('Sign-in was cancelled.');
+    } else if (firebaseError.code === 'auth/cancelled-popup-request') {
+      throw new Error('Another sign-in popup is already open.');
+    } else if (firebaseError.code === 'auth/credential-already-in-use') {
+      throw new Error('This Google account is already linked to another user.');
+    } else if (firebaseError.code === 'auth/provider-already-linked') {
+      throw new Error('A Google account is already linked to this user.');
+    } else if (firebaseError.code === 'auth/email-already-in-use') {
+      throw new Error('This email is already in use by another account.');
+    }
+    throw error;
+  }
+};

@@ -13,6 +13,7 @@ export interface IUser extends Document {
   bio?: string;
   avatarUrl?: string;
   googleId?: string;
+  googleEmail?: string;
   authProviders: ('email' | 'google')[];
   preferences: IUserPreferences;
   createdAt: Date;
@@ -47,6 +48,10 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: false,
     sparse: true, // Allows multiple null values but unique non-null values
+  },
+  googleEmail: {
+    type: String,
+    required: false,
   },
   authProviders: {
     type: [String],

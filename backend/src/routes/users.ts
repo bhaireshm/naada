@@ -5,6 +5,8 @@ import {
   updateUserProfile,
   getUserById,
   searchUsers,
+  linkGoogleAccount,
+  unlinkGoogleAccount,
 } from '../controllers/userController';
 import {
   getUserSettings,
@@ -19,6 +21,10 @@ router.get('/search', verifyToken, searchUsers);
 // Current user profile
 router.get('/me', verifyToken, getUserProfile);
 router.put('/me', verifyToken, updateUserProfile);
+
+// Google account linking
+router.post('/me/link-google', verifyToken, linkGoogleAccount);
+router.delete('/me/link-google', verifyToken, unlinkGoogleAccount);
 
 // Current user settings
 router.get('/me/settings', verifyToken, getUserSettings);

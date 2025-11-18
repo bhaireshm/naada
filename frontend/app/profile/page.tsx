@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getUserProfile, getPlaylists, UserProfile, Playlist } from '@/lib/api';
+import { getUserProfile, getPlaylists, UserProfile, Playlist, linkGoogleAccount, unlinkGoogleAccount } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import EditProfileModal from '@/components/EditProfileModal';
 import UserAvatar from '@/components/UserAvatar';
+import { GoogleAccountSection } from '@/components/GoogleAccountSection';
+import { linkGoogleAccountToCurrentUser } from '@/lib/firebase';
 import {
   Container,
   Title,
@@ -21,7 +23,6 @@ import {
 import { IconEdit, IconPlaylist, IconMusic } from '@tabler/icons-react';
 
 function ProfilePageContent() {
-  const theme = useMantineTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +49,31 @@ function ProfilePageContent() {
   };
 
   const publicPlaylists = playlists.filter(p => p.visibility === 'public');
+
+  const handleLinkGoogle = async () => {
+    // Use linkWithPopup to link Google to current Firebase user (doesn't create new user)
+    const result = await linkGoogleAccountToCurrentUser();
+    
+    // Get the ID token from the linked credential
+    const idToken = await result.user.getIdToken();
+    
+    // Call backend to update our database with the Google account info
+    const updatedProfile = await linkGoogleAccount(idToken);
+    
+    // Update local state
+    setProfile(updatedProfile);
+  };
+
+  const handleUnlinkGoogle = async () => {
+    // Call backend to unlink the account
+    const updatedProfile = await unlinkGoogleAccount();
+    
+    // Update local state
+    setProfile(updatedProfile);
+  };
+
+  // Check if user can unlink (must have email auth provider)
+  const canUnlink = profile?.authProviders?.includes('email') ?? false;
 
   return (
     <Box pb={90}>
@@ -93,6 +119,17 @@ function ProfilePageContent() {
                 </Box>
               </Group>
             </Card>
+
+            {/* Google Account Section */}
+            <Box mb="xl">
+              <GoogleAccountSection
+                googleId={profile?.googleId}
+                googleEmail={profile?.googleEmail}
+                onLink={handleLinkGoogle}
+                onUnlink={handleUnlinkGoogle}
+                canUnlink={canUnlink}
+              />
+            </Box>
 
             {/* Statistics */}
             <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md" mb="xl">

@@ -49,14 +49,12 @@
 
 - [x] 6. Add tooltips to existing buttons
 
-
   - Add tooltips to audio player controls
   - Add tooltips to navigation links
   - Add tooltips to common action buttons
   - _Requirements: 3.1, 3.3, 3.5_
 
 - [x] 7. Create KeyboardShortcutsModal component
-
 
   - Build modal component for shortcuts help
   - Organize shortcuts by category
