@@ -33,6 +33,8 @@ import {
   IconHeart,
 } from '@tabler/icons-react';
 
+import Pagination from '@/components/Pagination';
+
 function PlaylistsPageContent() {
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -42,6 +44,8 @@ function PlaylistsPageContent() {
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [creating, setCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'my' | 'followed'>('my');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
   const theme = useMantineTheme();
   const { colorScheme } = useMantineColorScheme();
   const { user } = useAuth();
@@ -70,6 +74,28 @@ function PlaylistsPageContent() {
     (p.ownerId !== user?.uid && p.userId !== user?.uid) && 
     p.followers.includes(user?.uid || '')
   );
+
+  // Pagination for active tab
+  const activePlaylistsData = activeTab === 'my' ? myPlaylists : followedPlaylists;
+  const totalPages = Math.ceil(activePlaylistsData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedPlaylists = activePlaylistsData.slice(startIndex, endIndex);
+
+  // Reset to page 1 when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  };
 
   const handleCreatePlaylist = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,9 +271,10 @@ function PlaylistsPageContent() {
         )}
 
         {/* Playlist Grid */}
-        {!loading && !error && (activeTab === 'my' ? myPlaylists : followedPlaylists).length > 0 && (
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={theme.spacing.md}>
-            {(activeTab === 'my' ? myPlaylists : followedPlaylists).map((playlist) => {
+        {!loading && !error && activePlaylistsData.length > 0 && (
+          <>
+            <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={theme.spacing.md}>
+              {paginatedPlaylists.map((playlist) => {
               const songCount = Array.isArray(playlist.songIds) ? playlist.songIds.length : 0;
               
               return (
@@ -330,6 +357,21 @@ function PlaylistsPageContent() {
               );
             })}
           </SimpleGrid>
+
+          {/* Pagination */}
+          {activePlaylistsData.length > itemsPerPage && (
+            <Box mt="xl">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={activePlaylistsData.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={handleItemsPerPageChange}
+              />
+            </Box>
+          )}
+          </>
         )}
       </Container>
 

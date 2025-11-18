@@ -25,6 +25,9 @@ import {
 import FavoriteButton from '@/components/FavoriteButton';
 import { ShortcutTooltip } from '@/components/ShortcutTooltip';
 import { KEYBOARD_SHORTCUTS } from '@/lib/keyboardShortcuts';
+import ShuffleButton from '@/components/ShuffleButton';
+import RepeatButton from '@/components/RepeatButton';
+import PlaybackSpeedControl from '@/components/PlaybackSpeedControl';
 
 interface AudioPlayerProps {
   song: Song | null;
@@ -231,6 +234,8 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
         {/* Center: Playback Controls */}
         <Box style={{ flex: '1 1 auto', maxWidth: 600 }}>
           <Group gap="xs" justify="center" mb={4}>
+            <ShuffleButton size={32} />
+            
             <ShortcutTooltip shortcut={KEYBOARD_SHORTCUTS.previousSong} label="Previous">
               <ActionIcon
                 variant="light"
@@ -307,6 +312,8 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
                 <IconPlayerSkipForward size={16} stroke={2.5} />
               </ActionIcon>
             </ShortcutTooltip>
+            
+            <RepeatButton size={32} />
           </Group>
 
           <Slider
@@ -336,8 +343,10 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
           />
         </Box>
 
-        {/* Right: Volume Control */}
-        <Group gap="xs" style={{ flex: '0 0 130px' }} justify="flex-end">
+        {/* Right: Volume and Speed Control */}
+        <Group gap="xs" style={{ flex: '0 0 250px' }} justify="flex-end">
+          <PlaybackSpeedControl />
+          
           <ShortcutTooltip shortcut={KEYBOARD_SHORTCUTS.mute} label={isMuted ? 'Unmute' : 'Mute'}>
             <ActionIcon
               variant="light"

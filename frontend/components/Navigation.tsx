@@ -8,7 +8,6 @@ import {
   Drawer,
   Group,
   Menu,
-  ActionIcon,
   Text,
   NavLink,
   useMantineTheme,
@@ -78,9 +77,9 @@ export default function Navigation() {
           }}
         />
         
-        <Group h="100%" px={theme.spacing.md} justify="space-between" style={{ position: 'relative', zIndex: 201 }}>
+        <Group h="100%" px={theme.spacing.md} justify="space-between" align="center" style={{ position: 'relative', zIndex: 201 }} wrap="nowrap">
           {/* Logo and Burger Menu */}
-          <Group gap={theme.spacing.md}>
+          <Group gap={theme.spacing.md} align="center" wrap="nowrap">
             {user && (
               <Burger
                 opened={drawerOpened}
@@ -88,10 +87,14 @@ export default function Navigation() {
                 hiddenFrom="md"
                 size="md"
                 color={theme.colors.primary[0]}
+                style={{
+                  cursor: 'pointer',
+                  zIndex: 202,
+                }}
               />
             )}
-            <Link href="/" style={{ textDecoration: 'none' }}>
-              <Group gap={theme.spacing.sm}>
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <Group gap={theme.spacing.sm} align="center" wrap="nowrap">
                 <div
                   style={{
                     background: 'rgba(255, 255, 255, 0.15)',
@@ -101,18 +104,19 @@ export default function Navigation() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
                   <IconVinyl size={28} color={theme.colors.primary[0]} />
                 </div>
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <Text 
                     size="xl" 
                     fw={700}
                     c={theme.colors.primary[0]}
                     style={{
                       letterSpacing: '0.5px',
-                      lineHeight: 1,
+                      lineHeight: 1.2,
                     }}
                   >
                     Music Player
@@ -121,8 +125,8 @@ export default function Navigation() {
                     size="xs" 
                     c={theme.colors.primary[2]} 
                     style={{ 
-                      lineHeight: 1, 
-                      marginTop: theme.spacing.xs 
+                      lineHeight: 1.2, 
+                      marginTop: 2,
                     }}
                   >
                     Your Personal Library
@@ -380,10 +384,10 @@ export default function Navigation() {
         size="xs"
         padding="md"
         title={
-          <Group gap={theme.spacing.sm}>
+          <Group gap={theme.spacing.sm} align="center">
             <div
               style={{
-                background: `linear-gradient(135deg, ${theme.colors.accent1[7]} 0%, ${theme.colors.tertiary[6]} 100%)`,
+                background: `linear-gradient(135deg, ${theme.colors.accent1[7]} 0%, ${theme.colors.tertiary[6]} 100())`,
                 borderRadius: theme.radius.md,
                 padding: theme.spacing.xs,
                 display: 'flex',
@@ -397,8 +401,16 @@ export default function Navigation() {
           </Group>
         }
         hiddenFrom="md"
-        zIndex={1000}
+        zIndex={1001}
         overlayProps={{ opacity: 0.5, blur: 4 }}
+        styles={{
+          content: {
+            pointerEvents: 'auto',
+          },
+          body: {
+            pointerEvents: 'auto',
+          },
+        }}
       >
         <NavLink
           label="Library"
@@ -412,6 +424,8 @@ export default function Navigation() {
           style={{
             borderRadius: theme.radius.md,
             marginBottom: theme.spacing.sm,
+            cursor: 'pointer',
+            pointerEvents: 'auto',
           }}
         />
         <NavLink
@@ -426,6 +440,8 @@ export default function Navigation() {
           style={{
             borderRadius: theme.radius.md,
             marginBottom: theme.spacing.sm,
+            cursor: 'pointer',
+            pointerEvents: 'auto',
           }}
         />
         <NavLink
@@ -440,6 +456,8 @@ export default function Navigation() {
           style={{
             borderRadius: theme.radius.md,
             marginBottom: theme.spacing.sm,
+            cursor: 'pointer',
+            pointerEvents: 'auto',
           }}
         />
         <NavLink
@@ -454,6 +472,8 @@ export default function Navigation() {
           style={{
             borderRadius: theme.radius.md,
             marginBottom: theme.spacing.sm,
+            cursor: 'pointer',
+            pointerEvents: 'auto',
           }}
         />
         <NavLink
@@ -468,6 +488,8 @@ export default function Navigation() {
           style={{
             borderRadius: theme.radius.md,
             marginBottom: theme.spacing.sm,
+            cursor: 'pointer',
+            pointerEvents: 'auto',
           }}
         />
         <Divider my={theme.spacing.md} />
@@ -484,6 +506,8 @@ export default function Navigation() {
               style={{
                 borderRadius: theme.radius.md,
                 marginBottom: theme.spacing.sm,
+                cursor: 'pointer',
+                pointerEvents: 'auto',
               }}
             />
             <NavLink
@@ -497,6 +521,8 @@ export default function Navigation() {
               style={{
                 borderRadius: theme.radius.md,
                 marginBottom: theme.spacing.sm,
+                cursor: 'pointer',
+                pointerEvents: 'auto',
               }}
             />
             <NavLink
@@ -507,6 +533,8 @@ export default function Navigation() {
               color="red"
               style={{
                 borderRadius: theme.radius.md,
+                cursor: 'pointer',
+                pointerEvents: 'auto',
               }}
             />
           </>

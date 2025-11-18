@@ -42,6 +42,22 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       shortcut: KEYBOARD_SHORTCUTS.mute,
       callback: () => audioPlayer.toggleMute(),
     },
+    {
+      shortcut: KEYBOARD_SHORTCUTS.shuffle,
+      callback: () => audioPlayer.toggleShuffle(),
+    },
+    {
+      shortcut: KEYBOARD_SHORTCUTS.repeat,
+      callback: () => audioPlayer.cycleRepeatMode(),
+    },
+    {
+      shortcut: KEYBOARD_SHORTCUTS.speedUp,
+      callback: () => audioPlayer.increaseSpeed(),
+    },
+    {
+      shortcut: KEYBOARD_SHORTCUTS.speedDown,
+      callback: () => audioPlayer.decreaseSpeed(),
+    },
   ]);
 
   return (

@@ -8,6 +8,8 @@ import playlistSharingRouter from './routes/playlistSharing';
 import searchRouter from './routes/search';
 import favoritesRouter from './routes/favorites';
 import usersRouter from './routes/users';
+import artistsRouter from './routes/artists';
+import albumsRouter from './routes/albums';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -29,6 +31,8 @@ app.use('/playlists', playlistsRouter);
 app.use('/search', searchRouter);
 app.use('/favorites', favoritesRouter);
 app.use('/users', usersRouter);
+app.use('/artists', artistsRouter);
+app.use('/albums', albumsRouter);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

@@ -33,6 +33,9 @@ import {
   IconMusic,
 } from '@tabler/icons-react';
 import PlayingAnimation from '@/components/PlayingAnimation';
+import { DownloadButton } from '@/components/DownloadButton';
+import { getSongStreamUrl } from '@/lib/api';
+import Pagination from '@/components/Pagination';
 
 interface FavoriteSong extends Song {
   favoritedAt: string;
@@ -43,6 +46,8 @@ function FavoritesPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const { setQueue, isPlaying, currentSong: audioCurrentSong } = useAudioPlayerContext();
   const { refreshFavorites } = useFavorites();
   const router = useRouter();
@@ -67,7 +72,7 @@ function FavoritesPageContent() {
 
     try {
       const data = await getFavorites();
-      const favoriteSongs = (data as { favorites: Array<{ song: any; createdAt: string }> }).favorites.map((fav) => ({
+      const favoriteSongs = (data as { favorites: Array<{ song: unknown; createdAt: string }> }).favorites.map((fav) => ({
         ...fav.song,
         favoritedAt: fav.createdAt,
       }));
@@ -80,6 +85,12 @@ function FavoritesPageContent() {
     }
   };
 
+  // Pagination calculations
+  const totalPages = Math.ceil(songs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSongs = songs.slice(startIndex, endIndex);
+
   const handlePlaySong = (song: FavoriteSong, index: number) => {
     setQueue(songs, index);
   };
@@ -91,6 +102,16 @@ function FavoritesPageContent() {
   const handleFavoriteRemoved = async () => {
     await fetchFavorites();
     await refreshFavorites();
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
   };
 
   return (
@@ -212,7 +233,7 @@ function FavoritesPageContent() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {songs.map((song, index) => (
+                  {paginatedSongs.map((song, index) => (
                     <Table.Tr
                       key={song.id}
                       bg={
@@ -303,7 +324,7 @@ function FavoritesPageContent() {
 
             {/* Song List - Mobile Stack */}
             <Stack gap="xs" hiddenFrom="md">
-              {songs.map((song, index) => (
+              {paginatedSongs.map((song, index) => (
                 <Box
                   key={song.id}
                   p="md"
@@ -351,6 +372,20 @@ function FavoritesPageContent() {
                 </Box>
               ))}
             </Stack>
+
+            {/* Pagination */}
+            {songs.length > itemsPerPage && (
+              <Box mt="xl">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={songs.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </Box>
+            )}
           </>
         )}
       </Container>

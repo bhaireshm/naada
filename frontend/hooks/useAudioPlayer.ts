@@ -13,6 +13,9 @@ interface AudioPlayerState {
   error: string | null;
   queue: Song[];
   currentIndex: number;
+  shuffleMode: boolean;
+  repeatMode: 'off' | 'all' | 'one';
+  playbackSpeed: number;
 }
 
 interface AudioPlayerActions {
@@ -27,6 +30,14 @@ interface AudioPlayerActions {
   next: () => void;
   previous: () => void;
   setQueue: (songs: Song[], startIndex?: number) => void;
+  toggleShuffle: () => void;
+  setRepeatMode: (mode: 'off' | 'all' | 'one') => void;
+  cycleRepeatMode: () => void;
+  setPlaybackSpeed: (speed: number) => void;
+  increaseSpeed: () => void;
+  decreaseSpeed: () => void;
+  removeFromQueue: (index: number) => void;
+  jumpToQueueIndex: (index: number) => void;
 }
 
 export type UseAudioPlayerReturn = AudioPlayerState & AudioPlayerActions;
@@ -40,6 +51,10 @@ interface PersistedPlayerState {
   volume: number;
   queue: Song[];
   currentIndex: number;
+  shuffleMode: boolean;
+  repeatMode: 'off' | 'all' | 'one';
+  playbackSpeed: number;
+  originalQueue: Song[];
 }
 
 const STORAGE_KEY = 'audioPlayerState';
@@ -77,7 +92,23 @@ function savePersistedState(state: PersistedPlayerState): void {
 
 const VOLUME_STORAGE_KEY = 'musicPlayerVolume';
 const MUTE_STORAGE_KEY = 'musicPlayerMuted';
+const SHUFFLE_STORAGE_KEY = 'musicPlayerShuffle';
+const REPEAT_STORAGE_KEY = 'musicPlayerRepeat';
+const SPEED_STORAGE_KEY = 'musicPlayerSpeed';
 const DEFAULT_VOLUME = 0.7; // 70%
+const DEFAULT_SPEED = 1.0; // Normal speed
+
+/**
+ * Fisher-Yates shuffle algorithm for unbiased randomization
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 export function useAudioPlayer(): UseAudioPlayerReturn {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -95,6 +126,10 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
   const [error, setError] = useState<string | null>(null);
   const [queue, setQueue] = useState<Song[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [shuffleMode, setShuffleMode] = useState<boolean>(false);
+  const [repeatMode, setRepeatModeState] = useState<'off' | 'all' | 'one'>('off');
+  const [playbackSpeed, setPlaybackSpeedState] = useState<number>(DEFAULT_SPEED);
+  const [originalQueue, setOriginalQueue] = useState<Song[]>([]); // Store unshuffled queue
 
   // Initialize audio element and restore persisted state after mount
   useEffect(() => {
@@ -106,6 +141,9 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
       try {
         const storedVolume = localStorage.getItem(VOLUME_STORAGE_KEY);
         const storedMuted = localStorage.getItem(MUTE_STORAGE_KEY);
+        const storedShuffle = localStorage.getItem(SHUFFLE_STORAGE_KEY);
+        const storedRepeat = localStorage.getItem(REPEAT_STORAGE_KEY);
+        const storedSpeed = localStorage.getItem(SPEED_STORAGE_KEY);
         
         if (storedVolume) {
           const vol = parseFloat(storedVolume);
@@ -120,6 +158,22 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
           setIsMuted(true);
           audioRef.current.muted = true;
         }
+        
+        if (storedShuffle === 'true') {
+          setShuffleMode(true);
+        }
+        
+        if (storedRepeat && ['off', 'all', 'one'].includes(storedRepeat)) {
+          setRepeatModeState(storedRepeat as 'off' | 'all' | 'one');
+        }
+        
+        if (storedSpeed) {
+          const speed = parseFloat(storedSpeed);
+          if (speed >= 0.25 && speed <= 2.0) {
+            setPlaybackSpeedState(speed);
+            audioRef.current.playbackRate = speed;
+          }
+        }
       } catch (error) {
         console.error('Failed to load volume settings:', error);
       }
@@ -132,6 +186,18 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
         setCurrentSong(persistedState.currentSong);
         setQueue(persistedState.queue);
         setCurrentIndex(persistedState.currentIndex);
+        setOriginalQueue(persistedState.originalQueue || persistedState.queue);
+        
+        if (persistedState.shuffleMode !== undefined) {
+          setShuffleMode(persistedState.shuffleMode);
+        }
+        if (persistedState.repeatMode) {
+          setRepeatModeState(persistedState.repeatMode);
+        }
+        if (persistedState.playbackSpeed) {
+          setPlaybackSpeedState(persistedState.playbackSpeed);
+          audioRef.current.playbackRate = persistedState.playbackSpeed;
+        }
         
         // Restore song and position if available
         if (persistedState.currentSong) {
@@ -412,14 +478,29 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
    * @param {number} startIndex - Index of the song to start playing (default: 0)
    */
   const setQueueFunc = useCallback((songs: Song[], startIndex: number = 0) => {
-    setQueue(songs);
-    setCurrentIndex(startIndex);
+    setOriginalQueue(songs); // Always store original order
     
-    // Load the song at the start index if valid
-    if (startIndex >= 0 && startIndex < songs.length) {
-      loadSong(songs[startIndex]);
+    if (shuffleMode) {
+      // If shuffle is active, shuffle the new queue
+      const shuffled = shuffleArray(songs);
+      setQueue(shuffled);
+      // Find the start song in shuffled queue
+      const startSong = songs[startIndex];
+      const newIndex = shuffled.findIndex(song => song.id === startSong?.id);
+      setCurrentIndex(newIndex >= 0 ? newIndex : 0);
+      if (shuffled[newIndex >= 0 ? newIndex : 0]) {
+        loadSong(shuffled[newIndex >= 0 ? newIndex : 0]);
+      }
+    } else {
+      setQueue(songs);
+      setCurrentIndex(startIndex);
+      
+      // Load the song at the start index if valid
+      if (startIndex >= 0 && startIndex < songs.length) {
+        loadSong(songs[startIndex]);
+      }
     }
-  }, [loadSong]);
+  }, [loadSong, shuffleMode]);
 
   /**
    * Advance to the next song in the queue
@@ -451,14 +532,156 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     }
   }, [queue, currentIndex, loadSong]);
 
+  /**
+   * Toggle shuffle mode
+   */
+  const toggleShuffle = useCallback(() => {
+    const newShuffleMode = !shuffleMode;
+    setShuffleMode(newShuffleMode);
+    
+    if (newShuffleMode) {
+      // Activating shuffle: save original queue and shuffle remaining songs
+      setOriginalQueue(queue);
+      
+      if (queue.length > 0 && currentIndex >= 0) {
+        // Keep current song in place, shuffle the rest
+        const beforeCurrent = queue.slice(0, currentIndex);
+        const afterCurrent = queue.slice(currentIndex + 1);
+        const shuffledAfter = shuffleArray(afterCurrent);
+        const newQueue = [...beforeCurrent, queue[currentIndex], ...shuffledAfter];
+        setQueue(newQueue);
+      }
+    } else {
+      // Deactivating shuffle: restore original queue order
+      if (originalQueue.length > 0) {
+        // Find current song in original queue
+        const currentSongId = currentSong?.id;
+        const newIndex = originalQueue.findIndex(song => song.id === currentSongId);
+        setQueue(originalQueue);
+        setCurrentIndex(newIndex >= 0 ? newIndex : currentIndex);
+      }
+    }
+    
+    // Persist shuffle state
+    try {
+      localStorage.setItem(SHUFFLE_STORAGE_KEY, newShuffleMode.toString());
+    } catch (error) {
+      console.error('Failed to save shuffle state:', error);
+    }
+  }, [shuffleMode, queue, currentIndex, currentSong, originalQueue]);
+
+  /**
+   * Set repeat mode
+   */
+  const setRepeatMode = useCallback((mode: 'off' | 'all' | 'one') => {
+    setRepeatModeState(mode);
+    
+    // Persist repeat mode
+    try {
+      localStorage.setItem(REPEAT_STORAGE_KEY, mode);
+    } catch (error) {
+      console.error('Failed to save repeat mode:', error);
+    }
+  }, []);
+
+  /**
+   * Cycle through repeat modes: off → all → one → off
+   */
+  const cycleRepeatMode = useCallback(() => {
+    const modes: Array<'off' | 'all' | 'one'> = ['off', 'all', 'one'];
+    const currentModeIndex = modes.indexOf(repeatMode);
+    const nextMode = modes[(currentModeIndex + 1) % modes.length];
+    setRepeatMode(nextMode);
+  }, [repeatMode, setRepeatMode]);
+
+  /**
+   * Set playback speed
+   */
+  const setPlaybackSpeed = useCallback((speed: number) => {
+    if (!audioRef.current) return;
+    
+    // Clamp speed between 0.25x and 2.0x
+    const clampedSpeed = Math.max(0.25, Math.min(2.0, speed));
+    audioRef.current.playbackRate = clampedSpeed;
+    setPlaybackSpeedState(clampedSpeed);
+    
+    // Persist playback speed
+    try {
+      localStorage.setItem(SPEED_STORAGE_KEY, clampedSpeed.toString());
+    } catch (error) {
+      console.error('Failed to save playback speed:', error);
+    }
+  }, []);
+
+  /**
+   * Increase playback speed by 0.25x
+   */
+  const increaseSpeed = useCallback(() => {
+    const newSpeed = Math.min(2.0, playbackSpeed + 0.25);
+    setPlaybackSpeed(newSpeed);
+  }, [playbackSpeed, setPlaybackSpeed]);
+
+  /**
+   * Decrease playback speed by 0.25x
+   */
+  const decreaseSpeed = useCallback(() => {
+    const newSpeed = Math.max(0.25, playbackSpeed - 0.25);
+    setPlaybackSpeed(newSpeed);
+  }, [playbackSpeed, setPlaybackSpeed]);
+
+  /**
+   * Remove a song from the queue
+   */
+  const removeFromQueue = useCallback((index: number) => {
+    if (index < 0 || index >= queue.length) return;
+    
+    const newQueue = [...queue];
+    newQueue.splice(index, 1);
+    setQueue(newQueue);
+    
+    // Adjust current index if necessary
+    if (index < currentIndex) {
+      setCurrentIndex(currentIndex - 1);
+    } else if (index === currentIndex && newQueue.length > 0) {
+      // If removing current song, load the next one (or previous if at end)
+      const newIndex = Math.min(currentIndex, newQueue.length - 1);
+      setCurrentIndex(newIndex);
+      if (newQueue[newIndex]) {
+        loadSong(newQueue[newIndex]);
+      }
+    }
+  }, [queue, currentIndex, loadSong]);
+
+  /**
+   * Jump to a specific song in the queue
+   */
+  const jumpToQueueIndex = useCallback((index: number) => {
+    if (index < 0 || index >= queue.length) return;
+    
+    setCurrentIndex(index);
+    loadSong(queue[index]);
+  }, [queue, loadSong]);
+
   // Auto-play next song when current song ends
   useEffect(() => {
     if (!audioRef.current) return;
 
     const handleEnded = () => {
-      // Check if there's a next song in the queue
-      if (currentIndex >= 0 && currentIndex < queue.length - 1) {
+      if (repeatMode === 'one') {
+        // Repeat current song
+        audioRef.current!.currentTime = 0;
+        audioRef.current!.play();
+      } else if (repeatMode === 'all' && currentIndex === queue.length - 1) {
+        // Repeat all: go back to start
+        setCurrentIndex(0);
+        loadSong(queue[0]);
+      } else if (currentIndex >= 0 && currentIndex < queue.length - 1) {
+        // Normal: play next song
         next();
+      } else if (repeatMode === 'all' && queue.length > 0) {
+        // At end with repeat all: restart
+        setCurrentIndex(0);
+        loadSong(queue[0]);
       }
     };
 
@@ -468,7 +691,7 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     return () => {
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentIndex, queue.length, next]);
+  }, [currentIndex, queue, repeatMode, next, loadSong]);
 
   // Persist state changes to localStorage
   useEffect(() => {
@@ -480,8 +703,12 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
       volume,
       queue,
       currentIndex,
+      shuffleMode,
+      repeatMode,
+      playbackSpeed,
+      originalQueue,
     });
-  }, [currentSong, currentTime, volume, queue, currentIndex]);
+  }, [currentSong, currentTime, volume, queue, currentIndex, shuffleMode, repeatMode, playbackSpeed, originalQueue]);
 
   return {
     currentSong,
@@ -494,6 +721,9 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     error,
     queue,
     currentIndex,
+    shuffleMode,
+    repeatMode,
+    playbackSpeed,
     play,
     pause,
     seek,
@@ -505,5 +735,13 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     next,
     previous,
     setQueue: setQueueFunc,
+    toggleShuffle,
+    setRepeatMode,
+    cycleRepeatMode,
+    setPlaybackSpeed,
+    increaseSpeed,
+    decreaseSpeed,
+    removeFromQueue,
+    jumpToQueueIndex,
   };
 }

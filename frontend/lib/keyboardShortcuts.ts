@@ -53,6 +53,31 @@ export const KEYBOARD_SHORTCUTS: ShortcutConfig = {
     description: 'Mute/Unmute',
     category: 'playback',
   },
+  shuffle: {
+    key: 's',
+    description: 'Toggle shuffle',
+    category: 'playback',
+  },
+  repeat: {
+    key: 'r',
+    description: 'Cycle repeat mode',
+    category: 'playback',
+  },
+  speedUp: {
+    key: ']',
+    description: 'Increase speed',
+    category: 'playback',
+  },
+  speedDown: {
+    key: '[',
+    description: 'Decrease speed',
+    category: 'playback',
+  },
+  showQueue: {
+    key: 'q',
+    description: 'Show queue',
+    category: 'playback',
+  },
 
   // Navigation
   goHome: {

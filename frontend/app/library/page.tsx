@@ -37,6 +37,9 @@ import {
 } from '@tabler/icons-react';
 import PlayingAnimation from '@/components/PlayingAnimation';
 import FavoriteButton from '@/components/FavoriteButton';
+import { DownloadButton } from '@/components/DownloadButton';
+import { getSongStreamUrl } from '@/lib/api';
+import Pagination from '@/components/Pagination';
 
 function LibraryPageContent() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -45,6 +48,8 @@ function LibraryPageContent() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showBulkUploadModal, setShowBulkUploadModal] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const { setQueue, isPlaying, currentSong: audioCurrentSong } = useAudioPlayerContext();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -92,9 +97,30 @@ function LibraryPageContent() {
     return true;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredSongs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSongs = filteredSongs.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [artistFilter, albumFilter]);
+
   // Clear filters
   const clearFilters = () => {
     router.push('/library');
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
   };
 
   /**
@@ -317,7 +343,7 @@ function LibraryPageContent() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {filteredSongs.map((song, index) => (
+                  {paginatedSongs.map((song, index) => (
                     <Table.Tr
                       key={song.id}
                       bg={
@@ -356,6 +382,13 @@ function LibraryPageContent() {
                             )}
                           </ActionIcon>
                           <FavoriteButton songId={song.id} size="sm" />
+                          <DownloadButton
+                            songId={song.id}
+                            title={song.title}
+                            artist={song.artist}
+                            fileUrl={getSongStreamUrl(song.id)}
+                            size="sm"
+                          />
                           <Menu position="bottom-end" shadow="sm" width={160}>
                             <Menu.Target>
                               <ActionIcon variant="subtle" color="gray" size={36}>
@@ -408,7 +441,7 @@ function LibraryPageContent() {
 
             {/* Song List - Mobile Stack */}
             <Stack gap="xs" hiddenFrom="md">
-              {filteredSongs.map((song, index) => (
+              {paginatedSongs.map((song, index) => (
                 <Box
                   key={song.id}
                   p="md"
@@ -451,6 +484,13 @@ function LibraryPageContent() {
                         )}
                       </ActionIcon>
                       <FavoriteButton songId={song.id} size="lg" />
+                      <DownloadButton
+                        songId={song.id}
+                        title={song.title}
+                        artist={song.artist}
+                        fileUrl={getSongStreamUrl(song.id)}
+                        size="lg"
+                      />
                       <Menu position="bottom-end" shadow="sm" width={160}>
                         <Menu.Target>
                           <ActionIcon variant="subtle" color="gray" size={40}>
@@ -498,6 +538,20 @@ function LibraryPageContent() {
                 </Box>
               ))}
             </Stack>
+
+            {/* Pagination */}
+            {filteredSongs.length > itemsPerPage && (
+              <Box mt="xl">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={filteredSongs.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
+                />
+              </Box>
+            )}
           </>
         )}
       </Container>

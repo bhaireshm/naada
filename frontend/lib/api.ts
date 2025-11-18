@@ -640,3 +640,62 @@ export async function unlinkGoogleAccount(): Promise<UserProfile> {
   const data = await parseResponse<{ user: UserProfile }>(response);
   return data.user;
 }
+
+/**
+ * Artist object structure
+ */
+export interface Artist {
+  name: string;
+  songCount: number;
+  albumCount: number;
+}
+
+/**
+ * Album object structure
+ */
+export interface Album {
+  artist: string;
+  album: string;
+  songCount: number;
+  year?: number;
+}
+
+/**
+ * Get all artists
+ */
+export async function getArtists(): Promise<Artist[]> {
+  const response = await makeAuthenticatedRequest('/artists');
+  const data = await parseResponse<{ artists: Artist[] }>(response);
+  return data.artists;
+}
+
+/**
+ * Get all songs by a specific artist
+ */
+export async function getArtistSongs(artistName: string): Promise<{ artist: string; songs: Song[] }> {
+  const encodedArtist = encodeURIComponent(artistName);
+  const response = await makeAuthenticatedRequest(`/artists/${encodedArtist}`);
+  return parseResponse(response);
+}
+
+/**
+ * Get all albums
+ */
+export async function getAlbums(): Promise<Album[]> {
+  const response = await makeAuthenticatedRequest('/albums');
+  const data = await parseResponse<{ albums: Album[] }>(response);
+  return data.albums;
+}
+
+/**
+ * Get all songs from a specific album
+ */
+export async function getAlbumSongs(
+  artistName: string,
+  albumName: string
+): Promise<{ artist: string; album: string; songs: Song[] }> {
+  const encodedArtist = encodeURIComponent(artistName);
+  const encodedAlbum = encodeURIComponent(albumName);
+  const response = await makeAuthenticatedRequest(`/albums/${encodedArtist}/${encodedAlbum}`);
+  return parseResponse(response);
+}
