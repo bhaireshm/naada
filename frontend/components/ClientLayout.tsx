@@ -8,6 +8,7 @@ import { AudioPlayerProvider } from '@/contexts/AudioPlayerContext';
 import { SearchProvider } from '@/contexts/SearchContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import SearchOverlay from '@/components/SearchOverlay';
+import { GlobalKeyboardShortcuts } from '@/components/GlobalKeyboardShortcuts';
 
 interface ClientLayoutProps {
   children: ReactNode;
@@ -19,6 +20,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <FavoritesProvider>
         <SearchProvider>
           <GlobalAudioPlayerProvider>
+            <GlobalKeyboardShortcuts />
             <AppShell 
               header={{ height: 60 }} 
               footer={{ height: 72 }}
