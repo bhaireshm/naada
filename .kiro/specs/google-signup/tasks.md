@@ -26,7 +26,6 @@
 
 - [x] 4. Integrate Google sign-in on signup page
 
-
   - Add GoogleSignInButton to signup page
   - Handle successful signup redirect
   - Extract and display profile information
@@ -34,7 +33,6 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
 - [x] 5. Integrate Google sign-in on login page
-
 
   - Add GoogleSignInButton to login page
   - Handle successful login redirect
@@ -51,28 +49,33 @@
   - Handle missing profile information
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 7. Update User model for Google authentication
+- [x] 7. Update User model for Google authentication
+
+
   - Add googleId field to User schema
   - Add authProviders array field
   - Create migration for existing users
   - Update user creation logic
   - _Requirements: 5.5_
 
-- [ ] 8. Implement account linking functionality
+- [x] 8. Implement account linking functionality
+
   - Create linkGoogleAccount function
   - Add account linking to settings page
   - Handle already linked account errors
   - Update authProviders array on link
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 9. Add backend token validation
+- [x] 9. Add backend token validation
+
   - Verify Firebase ID tokens on backend
   - Extract Google user ID from token
   - Validate token hasn't expired
   - Handle invalid token errors
   - _Requirements: 4.2, 4.4_
 
-- [ ] 10. Implement security measures
+- [x] 10. Implement security measures
+
   - Ensure all requests use HTTPS
   - Don't store Google access tokens
   - Implement session expiration
@@ -91,7 +94,8 @@
   - Test authProviders update
   - _Requirements: 5.2, 5.4, 5.5_
 
-- [ ] 11. Test and verify Google authentication
+- [x] 11. Test and verify Google authentication
+
   - Test signup with Google account
   - Test login with Google account
   - Test profile information is saved correctly
@@ -100,5 +104,6 @@
   - Verify security measures are in place
   - _Requirements: 1.1, 2.1, 3.1, 4.1, 5.1_
 
-- [ ] 12. Final checkpoint - Ensure all tests pass
+- [x] 12. Final checkpoint - Ensure all tests pass
+
   - Ensure all tests pass, ask the user if questions arise.
