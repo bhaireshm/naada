@@ -36,9 +36,53 @@ import PlayingAnimation from '@/components/PlayingAnimation';
 import { DownloadButton } from '@/components/DownloadButton';
 import { getSongStreamUrl } from '@/lib/api';
 import InfiniteScroll from '@/components/InfiniteScroll';
+import { notifications } from '@mantine/notifications';
+import { IconHeartFilled } from '@tabler/icons-react';
 
 interface FavoriteSong extends Song {
   favoritedAt: string;
+}
+
+// Favorite Menu Item Component to avoid button nesting
+function RemoveFavoriteMenuItem({ songId, onRemoved }: { songId: string; onRemoved: () => void }) {
+  const { toggleFavorite } = useFavorites();
+  const [isLoading, setIsLoading] = useState(false);
+  const theme = useMantineTheme();
+
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    try {
+      await toggleFavorite(songId);
+      notifications.show({
+        title: 'Removed from favorites',
+        message: 'Song removed from your favorites',
+        color: 'gray',
+        icon: <IconHeart size={16} />,
+      });
+      onRemoved();
+    } catch {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to remove from favorites. Please try again.',
+        color: 'red',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Menu.Item
+      leftSection={<IconHeartFilled size={16} style={{ color: '#ff6b9d' }} />}
+      onClick={handleRemove}
+      disabled={isLoading}
+      color="pink"
+      style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+    >
+      Remove from Favorites
+    </Menu.Item>
+  );
 }
 
 function FavoritesPageContent() {
@@ -395,17 +439,7 @@ function FavoritesPageContent() {
                           >
                             Play
                           </Menu.Item>
-                          <Menu.Item
-                            leftSection={
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <FavoriteButton songId={song.id} size="sm" />
-                              </div>
-                            }
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
-                          >
-                            Remove Favorite
-                          </Menu.Item>
+                          <RemoveFavoriteMenuItem songId={song.id} onRemoved={handleFavoriteRemoved} />
                           <Menu
                             trigger="click"
                             position="left-start"

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getSongs, Song } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { notifications } from '@mantine/notifications';
 import { useAudioPlayerContext } from '@/contexts/AudioPlayerContext';
 import UploadModal from '@/components/UploadModal';
 import { BulkUploadModal } from '@/components/BulkUploadModal';
@@ -40,6 +41,49 @@ import FavoriteButton from '@/components/FavoriteButton';
 import { DownloadButton } from '@/components/DownloadButton';
 import { getSongStreamUrl } from '@/lib/api';
 import InfiniteScroll from '@/components/InfiniteScroll';
+import { useFavorites } from '@/contexts/FavoritesContext';
+import { IconHeart, IconHeartFilled } from '@tabler/icons-react';
+
+// Favorite Menu Item Component to avoid button nesting
+function FavoriteMenuItem({ songId }: { songId: string }) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const [isLoading, setIsLoading] = useState(false);
+  const favorited = isFavorite(songId);
+  const theme = useMantineTheme();
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    try {
+      await toggleFavorite(songId);
+      notifications.show({
+        title: favorited ? 'Removed from favorites' : 'Added to favorites',
+        message: favorited ? 'Song removed from your favorites' : 'Song added to your favorites',
+        color: favorited ? 'gray' : 'pink',
+        icon: favorited ? <IconHeart size={16} /> : <IconHeartFilled size={16} />,
+      });
+    } catch {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to update favorites. Please try again.',
+        color: 'red',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Menu.Item
+      leftSection={favorited ? <IconHeartFilled size={16} style={{ color: '#ff6b9d' }} /> : <IconHeart size={16} />}
+      onClick={handleToggle}
+      disabled={isLoading}
+      style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+    >
+      {favorited ? 'Remove from Favorites' : 'Add to Favorites'}
+    </Menu.Item>
+  );
+}
 
 function LibraryPageContent() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -513,17 +557,7 @@ function LibraryPageContent() {
                           >
                             Play
                           </Menu.Item>
-                          <Menu.Item
-                            leftSection={
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <FavoriteButton songId={song.id} size="sm" />
-                              </div>
-                            }
-                            onClick={(e) => e.stopPropagation()}
-                            style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
-                          >
-                            Toggle Favorite
-                          </Menu.Item>
+                          <FavoriteMenuItem songId={song.id} />
                           <Menu
                             trigger="click"
                             position="left-start"
