@@ -342,7 +342,7 @@ function FavoritesPageContent() {
                     transition: `all ${theme.other.transitionDuration.normal} ${theme.other.easingFunctions.easeInOut}`,
                   }}
                 >
-                  <Group justify="space-between" wrap="nowrap">
+                  <Group justify="space-between" wrap="nowrap" align="flex-start">
                     <Box style={{ minWidth: 0, flex: 1 }}>
                       <Text
                         fw={audioCurrentSong?.id === song.id ? 600 : 400}
@@ -354,13 +354,17 @@ function FavoritesPageContent() {
                         {song.artist}
                       </Text>
                     </Box>
-                    <Group gap="xs" wrap="nowrap">
+                    <Group gap={6} wrap="nowrap" style={{ flexShrink: 0 }}>
                       <ActionIcon
                         variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
                         color="accent1"
                         size={44}
-                        onClick={() => handlePlaySong(song, index)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlaySong(song, index);
+                        }}
                         aria-label={`Play ${song.title}`}
+                        style={{ minWidth: 44, minHeight: 44 }}
                       >
                         {audioCurrentSong?.id === song.id && isPlaying ? (
                           <PlayingAnimation size={22} color="white" />
@@ -368,7 +372,72 @@ function FavoritesPageContent() {
                           <IconPlayerPlay size={22} />
                         )}
                       </ActionIcon>
-                      <FavoriteButton songId={song.id} size="lg" />
+                      <Menu position="bottom-end" shadow="md" width={180} zIndex={500}>
+                        <Menu.Target>
+                          <ActionIcon 
+                            variant="subtle" 
+                            color="gray" 
+                            size={44}
+                            style={{ minWidth: 44, minHeight: 44 }}
+                            aria-label="More options"
+                          >
+                            <IconDots size={20} />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown p={4}>
+                          <Menu.Item
+                            leftSection={<IconPlayerPlay size={16} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlaySong(song, index);
+                            }}
+                            style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+                          >
+                            Play
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={
+                              <div onClick={(e) => e.stopPropagation()}>
+                                <FavoriteButton songId={song.id} size="sm" />
+                              </div>
+                            }
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+                          >
+                            Remove Favorite
+                          </Menu.Item>
+                          <Menu
+                            trigger="click"
+                            position="left-start"
+                            offset={2}
+                            withArrow
+                            zIndex={501}
+                          >
+                            <Menu.Target>
+                              <Menu.Item 
+                                leftSection={<IconPlaylistAdd size={16} />}
+                                style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+                              >
+                                Add to Playlist
+                              </Menu.Item>
+                            </Menu.Target>
+                            <AddToPlaylistMenu
+                              songId={song.id}
+                              onSuccess={handleFavoriteRemoved}
+                            />
+                          </Menu>
+                          <Menu.Item
+                            leftSection={<IconInfoCircle size={16} />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSongDetails(song.id);
+                            }}
+                            style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+                          >
+                            Details
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
                     </Group>
                   </Group>
                 </Box>
