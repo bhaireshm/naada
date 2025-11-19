@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSongs } from '@/lib/api';
+import { getAlbums, Album } from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import {
   Container,
@@ -23,14 +23,6 @@ import { IconAlertCircle, IconDisc } from '@tabler/icons-react';
 import InfiniteScroll from '@/components/InfiniteScroll';
 import { getGradient, getTextGradient, getCardBackground, getCardBorder, getTransition } from '@/lib/themeColors';
 
-interface Album {
-  artist: string;
-  album: string;
-  songCount: number;
-  year?: string;
-  albumArt?: string;
-}
-
 function AlbumsPageContent() {
   const router = useRouter();
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -50,36 +42,7 @@ function AlbumsPageContent() {
     setError(null);
 
     try {
-      const songs = await getSongs();
-
-      // Group songs by artist and album
-      const albumMap = new Map<string, Album>();
-
-      songs.forEach((song) => {
-        if (song.album) {
-          const key = `${song.artist}|||${song.album}`;
-          if (albumMap.has(key)) {
-            const album = albumMap.get(key)!;
-            album.songCount++;
-          } else {
-            albumMap.set(key, {
-              artist: song.artist,
-              album: song.album,
-              songCount: 1,
-              year: song.year,
-              albumArt: song.albumArt,
-            });
-          }
-        }
-      });
-
-      const albumList = Array.from(albumMap.values()).sort((a, b) => {
-        if (a.artist === b.artist) {
-          return a.album.localeCompare(b.album);
-        }
-        return a.artist.localeCompare(b.artist);
-      });
-
+      const albumList = await getAlbums();
       setAlbums(albumList);
     } catch (err) {
       setError('Failed to load albums. Please try again.');
