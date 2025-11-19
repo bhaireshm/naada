@@ -131,7 +131,7 @@ export default function Navigation() {
                       marginTop: 2,
                     }}
                   >
-                    Your Music Library
+                    Your music, refined.
                   </Text>
                 </div>
               </Group>
