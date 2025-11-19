@@ -25,6 +25,11 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
               header={{ height: 60 }} 
               footer={{ height: 72 }}
               padding="md"
+              styles={{
+                header: {
+                  zIndex: 1000,
+                },
+              }}
             >
               <AppShell.Header>
                 <Navigation />

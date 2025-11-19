@@ -61,7 +61,7 @@ export default function Navigation() {
           background: `linear-gradient(135deg, ${theme.colors.accent1[7]} 0%, ${theme.colors.tertiary[6]} 100())`,
           boxShadow: theme.shadows.lg,
           position: 'relative',
-          zIndex: 200,
+          zIndex: 1000,
         }}
       >
         {/* Decorative overlay */}
@@ -77,7 +77,7 @@ export default function Navigation() {
           }}
         />
         
-        <Group h="100%" px={theme.spacing.md} justify="space-between" align="center" style={{ position: 'relative', zIndex: 201 }} wrap="nowrap">
+        <Group h="100%" px={theme.spacing.md} justify="space-between" align="center" style={{ position: 'relative', zIndex: 1001 }} wrap="nowrap">
           {/* Logo and Burger Menu */}
           <Group gap={theme.spacing.md} align="center" wrap="nowrap">
             {user && (
@@ -89,7 +89,7 @@ export default function Navigation() {
                 color={theme.colors.primary[0]}
                 style={{
                   cursor: 'pointer',
-                  zIndex: 202,
+                  zIndex: 1002,
                 }}
               />
             )}
@@ -281,12 +281,14 @@ export default function Navigation() {
           <Group gap={theme.spacing.xs}>
             {user && <OfflineIndicator />}
             {user ? (
-              <Menu shadow="sm" width={180} position="bottom-end" offset={4}>
+              <Menu shadow="sm" width={180} position="bottom-end" offset={4} zIndex={1050}>
                 <Menu.Target>
                   <div
                     style={{
                       cursor: 'pointer',
                       transition: 'transform 150ms ease',
+                      position: 'relative',
+                      zIndex: 1002,
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.05)';
@@ -401,7 +403,7 @@ export default function Navigation() {
           </Group>
         }
         hiddenFrom="md"
-        zIndex={1001}
+        zIndex={1100}
         overlayProps={{ opacity: 0.5, blur: 4 }}
         styles={{
           content: {
