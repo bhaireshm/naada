@@ -1,4 +1,4 @@
-// Music Player Service Worker
+// Naada Service Worker
 // Version 1.0.0
 
 const CACHE_VERSION = 'v1';

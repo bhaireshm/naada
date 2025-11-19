@@ -1,6 +1,8 @@
-# 🎵 Music Player
+# 🎵 Naada
 
 A modern, full-featured Progressive Web App (PWA) for managing and streaming your personal music collection with offline support.
+
+**Naada** (ನಾದ) means "sound" or "music" in Sanskrit and Kannada.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)

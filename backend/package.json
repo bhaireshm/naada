@@ -1,7 +1,7 @@
 {
-  "name": "backend",
+  "name": "naada-backend",
   "version": "1.0.0",
-  "description": "Backend API for online music player",
+  "description": "Backend API for Naada Music Library",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

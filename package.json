@@ -1,8 +1,8 @@
 {
-  "name": "@bhaireshm/music-player",
+  "name": "@bhaireshm/naada",
   "version": "1.0.0",
   "private": true,
-  "description": "Online Music Player - Monorepo",
+  "description": "Naada - Your Personal Music Library",
   "scripts": {
     "dev": "concurrently \"pnpm:dev:backend\" \"pnpm:dev:frontend\"",
     "dev:backend": "pnpm --filter backend dev",

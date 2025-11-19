@@ -10,15 +10,15 @@ import "@mantine/notifications/styles.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Music Player - Stream Your Music",
-  description: "Upload, organize, and stream your music collection",
+  title: "Naada - Your Music Library",
+  description: "Upload, organize, and stream your personal music collection",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Music Player",
+    title: "Naada",
   },
-  applicationName: "Music Player",
+  applicationName: "Naada",
   formatDetection: {
     telephone: false,
   },
@@ -52,7 +52,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Music Player" />
+        <meta name="apple-mobile-web-app-title" content="Naada" />
         
         {/* Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

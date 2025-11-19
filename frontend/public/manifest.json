@@ -1,7 +1,7 @@
 {
-  "name": "Music Player",
-  "short_name": "Music Player",
-  "description": "A modern music player with offline support",
+  "name": "Naada",
+  "short_name": "Naada",
+  "description": "Your personal music library with offline support",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1b1e",

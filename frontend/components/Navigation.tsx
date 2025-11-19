@@ -121,7 +121,7 @@ export default function Navigation() {
                       lineHeight: 1.2,
                     }}
                   >
-                    Music Player
+                    Naada
                   </Text>
                   <Text 
                     size="xs" 
@@ -131,7 +131,7 @@ export default function Navigation() {
                       marginTop: 2,
                     }}
                   >
-                    Your Personal Library
+                    Your Music Library
                   </Text>
                 </div>
               </Group>
