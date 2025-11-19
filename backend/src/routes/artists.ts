@@ -1,19 +1,20 @@
-import express from 'express';
+import express, { Router } from 'express';
 import { Song } from '../models/Song';
 import { verifyToken, AuthenticatedRequest } from '../middleware/auth';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * GET /api/artists
  * Get all artists with song and album counts
  */
-router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/', verifyToken, async (req: AuthenticatedRequest, res): Promise<void> => {
   try {
     const userId = req.userId;
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
 
     // Aggregate artists with their song counts
@@ -56,13 +57,14 @@ router.get('/', verifyToken, async (req: AuthenticatedRequest, res) => {
  * GET /api/artists/:artistName
  * Get all songs by a specific artist
  */
-router.get('/:artistName', verifyToken, async (req: AuthenticatedRequest, res) => {
+router.get('/:artistName', verifyToken, async (req: AuthenticatedRequest, res): Promise<void> => {
   try {
     const userId = req.userId;
     const { artistName } = req.params;
 
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
 
     // Decode the artist name from URL
