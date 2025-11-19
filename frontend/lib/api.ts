@@ -20,7 +20,8 @@ interface ErrorResponse {
 export interface Song {
   id: string;
   title: string;
-  artist: string;
+  artist: string; // Primary artist for display
+  artists?: string[]; // All artists (for filtering/search)
   mimeType: string;
   createdAt: string;
   albumArt?: string;

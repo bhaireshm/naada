@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { r2Client, bucketName } from '../config/storage';
 import { extractMetadata, AudioMetadata } from '../services/metadataService';
+import { parseArtists } from '../utils/artistParser';
 
 /**
  * Merge extracted metadata with user-provided metadata
@@ -132,9 +133,13 @@ export async function uploadSong(
         console.log('Uploading file to R2...');
         await uploadFile(fileBuffer, fileKey, mimeType, r2Metadata);
         
+        // Parse multiple artists
+        const artistsArray = parseArtists(mergedMetadata.artist);
+        
         // Update existing song record
         duplicate.title = mergedMetadata.title;
         duplicate.artist = mergedMetadata.artist;
+        duplicate.artists = artistsArray;
         duplicate.album = mergedMetadata.album;
         duplicate.year = mergedMetadata.year;
         duplicate.genre = mergedMetadata.genre;
@@ -175,8 +180,10 @@ export async function uploadSong(
       if (metadataChanged) {
         // Update metadata only
         console.log('Duplicate found with different metadata, updating...');
+        const artistsArray = parseArtists(mergedMetadata.artist);
         duplicate.title = mergedMetadata.title;
         duplicate.artist = mergedMetadata.artist;
+        duplicate.artists = artistsArray;
         duplicate.album = mergedMetadata.album;
         duplicate.year = mergedMetadata.year;
         duplicate.genre = mergedMetadata.genre;
@@ -252,10 +259,14 @@ export async function uploadSong(
     await uploadFile(fileBuffer, fileKey, mimeType, r2Metadata);
     console.log('File uploaded successfully');
 
+    // Parse multiple artists from the artist string
+    const artistsArray = parseArtists(mergedMetadata.artist);
+    
     // Save song metadata to database
     const song = new Song({
       title: mergedMetadata.title,
-      artist: mergedMetadata.artist,
+      artist: mergedMetadata.artist, // Keep original for display
+      artists: artistsArray, // Parsed array for search/filtering
       album: mergedMetadata.album,
       year: mergedMetadata.year,
       genre: mergedMetadata.genre,

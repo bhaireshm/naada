@@ -2,7 +2,8 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface ISong extends Document {
   title: string;
-  artist: string;
+  artist: string; // Primary artist (for display)
+  artists?: string[]; // All artists (for search and filtering)
   album?: string;
   year?: string;
   genre?: string;
@@ -23,6 +24,10 @@ const songSchema = new Schema<ISong>({
   artist: {
     type: String,
     required: true,
+  },
+  artists: {
+    type: [String],
+    required: false,
   },
   album: {
     type: String,
@@ -71,6 +76,7 @@ const songSchema = new Schema<ISong>({
 // Add indexes for search optimization
 songSchema.index({ title: 1 });
 songSchema.index({ artist: 1 });
+songSchema.index({ artists: 1 });
 songSchema.index({ album: 1 });
 songSchema.index({ artist: 1, album: 1 });
 
