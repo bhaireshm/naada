@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { AppShell } from '@mantine/core';
 import Navigation from '@/components/Navigation';
 import { GlobalAudioPlayerProvider } from '@/components/GlobalAudioPlayer';
@@ -15,6 +16,15 @@ interface ClientLayoutProps {
 }
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
+  const pathname = usePathname();
+  
+  // Auth pages should not have the AppShell layout
+  const isAuthPage = pathname === '/login' || pathname === '/register';
+  
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+  
   return (
     <AudioPlayerProvider>
       <FavoritesProvider>

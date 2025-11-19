@@ -57,23 +57,24 @@ export default function LoginPage() {
   return (
     <Box
       style={(theme) => ({
-        height: '100vh',
-        overflow: 'hidden',
-        background: `linear-gradient(135deg, ${theme.colors.accent1[8]} 0%, ${theme.colors.secondary[7]} 100%)`,
+        minHeight: '100vh',
+        background: `linear-gradient(135deg, ${theme.colors.accent1[8]} 0%, ${theme.colors.secondary[7]} 100())`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: 'var(--mantine-spacing-md)',
+        pointerEvents: 'auto',
+        touchAction: 'manipulation',
       })}
     >
-      <Container size={420} w="100%">
+      <Container size={420} w="100%" style={{ pointerEvents: 'auto' }}>
         <Paper 
           shadow="xl" 
           p={30} 
           radius="md"
           style={(theme) => ({
             background: `rgba(${parseInt(theme.colors.primary[0].slice(1, 3), 16)}, ${parseInt(theme.colors.primary[0].slice(3, 5), 16)}, ${parseInt(theme.colors.primary[0].slice(5, 7), 16)}, 0.95)`,
-            backdropFilter: 'blur(10px)',
+            pointerEvents: 'auto',
           })}
         >
           <Stack gap="md">
@@ -110,14 +111,15 @@ export default function LoginPage() {
 
             <Divider label="OR" labelPosition="center" />
 
-            <form onSubmit={form.onSubmit(handleSubmit)}>
-              <Stack gap="md">
+            <form onSubmit={form.onSubmit(handleSubmit)} style={{ pointerEvents: 'auto' }}>
+              <Stack gap="md" style={{ pointerEvents: 'auto' }}>
                 <TextInput
                   label="Email Address"
                   placeholder="you@example.com"
                   required
                   disabled={loading || googleLoading}
                   size="md"
+                  styles={{ input: { pointerEvents: 'auto', touchAction: 'manipulation' } }}
                   {...form.getInputProps('email')}
                 />
 
@@ -127,6 +129,7 @@ export default function LoginPage() {
                   required
                   disabled={loading || googleLoading}
                   size="md"
+                  styles={{ input: { pointerEvents: 'auto', touchAction: 'manipulation' } }}
                   {...form.getInputProps('password')}
                 />
 
@@ -137,6 +140,7 @@ export default function LoginPage() {
                   disabled={googleLoading}
                   variant="gradient"
                   gradient={{ from: 'accent1.7', to: 'accent2.7', deg: 135 }}
+                  style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
                 >
                   Sign In
                 </Button>

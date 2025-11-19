@@ -9,28 +9,96 @@
   --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Smooth transitions for theme changes */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-duration: var(--transition-normal);
-  transition-timing-function: var(--transition-timing);
+/* Smooth transitions for theme changes - exclude interactive elements */
+@media (min-width: 1024px) {
+  *:not(button):not(a):not(input):not(select):not(textarea):not([role="button"]) {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-duration: var(--transition-normal);
+    transition-timing-function: var(--transition-timing);
+  }
 }
 
-/* Ensure all interactive elements are clickable */
+/* Disable transitions on mobile/tablet to prevent click issues */
+@media (max-width: 1023px) {
+  *:not(button):not(input):not(select):not(textarea):not(a):not([role="button"]):not(.mantine-Button-root) {
+    transition: none !important;
+  }
+  
+  /* Re-enable only for specific animations */
+  .mantine-Modal-root,
+  .mantine-Drawer-root,
+  .mantine-Notification-root {
+    transition: opacity var(--transition-fast) var(--transition-timing) !important;
+  }
+}
+
+/* Ensure all interactive elements are clickable and have proper cursor */
 button,
 a,
 [role="button"],
-input,
-select,
-textarea {
+.mantine-Button-root,
+.mantine-UnstyledButton-root {
   pointer-events: auto !important;
-  cursor: pointer;
+  cursor: pointer !important;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 input,
 select,
-textarea {
-  cursor: text;
+textarea,
+.mantine-Input-input,
+.mantine-TextInput-input,
+.mantine-PasswordInput-input {
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+/* Prevent any parent from blocking button clicks - DESKTOP ONLY */
+@media (min-width: 1024px) {
+  button *,
+  .mantine-Button-root *,
+  [role="button"] * {
+    pointer-events: none;
+  }
+}
+
+button,
+.mantine-Button-root,
+[role="button"] {
+  pointer-events: auto !important;
+}
+
+/* Mobile/Tablet-specific fix for all buttons */
+@media (max-width: 1023px) {
+  button,
+  .mantine-Button-root,
+  [role="button"],
+  [type="button"],
+  [type="submit"] {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.2) !important;
+  }
+  
+  /* On mobile/tablet, button children should also be clickable */
+  button *,
+  button > *,
+  .mantine-Button-root *,
+  .mantine-Button-root > * {
+    pointer-events: auto !important;
+  }
+}
+
+/* Ensure buttons have explicit transitions */
+button,
+[role="button"],
+.mantine-Button-root {
+  transition: background-color var(--transition-fast) var(--transition-timing),
+              color var(--transition-fast) var(--transition-timing),
+              border-color var(--transition-fast) var(--transition-timing),
+              transform var(--transition-fast) var(--transition-timing),
+              opacity var(--transition-fast) var(--transition-timing) !important;
 }
 
 /* Respect reduced motion preferences */
@@ -45,19 +113,43 @@ textarea {
   }
 }
 
-/* Ensure minimum touch target sizes on mobile devices */
-@media (max-width: 768px) {
+/* Ensure minimum touch target sizes on mobile/tablet devices */
+@media (max-width: 1023px) {
   /* Ensure all interactive elements meet minimum touch target size (44x44px) */
   button,
   a,
   [role="button"],
   input[type="button"],
   input[type="submit"],
-  input[type="reset"] {
+  input[type="reset"],
+  .mantine-Button-root {
     min-height: 44px;
     min-width: 44px;
-    touch-action: manipulation;
+    touch-action: manipulation !important;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: auto !important;
+  }
+  
+  /* Ensure Google Sign In button is clickable */
+  .mantine-Button-root[type="button"] {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+  }
+  
+  /* Ensure all form buttons are clickable */
+  form button,
+  form .mantine-Button-root {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+  }
+  
+  /* Ensure Paper and Container don't block clicks */
+  .mantine-Paper-root,
+  .mantine-Container-root,
+  .mantine-Stack-root {
+    pointer-events: auto !important;
   }
 
   /* Ensure form inputs have adequate height for touch */
@@ -68,9 +160,13 @@ textarea {
   input[type="tel"],
   input[type="url"],
   textarea,
-  select {
+  select,
+  .mantine-Input-input,
+  .mantine-TextInput-input,
+  .mantine-PasswordInput-input {
     min-height: 44px;
     font-size: 16px; /* Prevents zoom on iOS */
+    pointer-events: auto !important;
   }
 
   /* Ensure menu items have adequate touch targets */
@@ -114,8 +210,8 @@ a:focus-visible,
   outline-offset: 2px;
 }
 
-/* Ensure proper spacing for mobile layouts */
-@media (max-width: 768px) {
+/* Ensure proper spacing for mobile/tablet layouts */
+@media (max-width: 1023px) {
   /* Add padding to prevent content from being hidden behind fixed elements */
   body {
     padding-bottom: env(safe-area-inset-bottom);
@@ -170,8 +266,8 @@ a:focus-visible,
   padding: 12px 16px;
 }
 
-/* Improve slider touch targets on mobile */
-@media (max-width: 768px) {
+/* Improve slider touch targets on mobile/tablet */
+@media (max-width: 1023px) {
   .mantine-Slider-thumb {
     width: 20px;
     height: 20px;
@@ -182,15 +278,15 @@ a:focus-visible,
   }
 }
 
-/* Ensure proper spacing for cards on mobile */
-@media (max-width: 768px) {
+/* Ensure proper spacing for cards on mobile/tablet */
+@media (max-width: 1023px) {
   .mantine-Card-root {
     padding: 16px;
   }
 }
 
 /* Improve modal touch interactions */
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .mantine-Modal-content {
     max-height: calc(100vh - 80px);
   }
@@ -211,8 +307,8 @@ a:focus-visible,
   padding: 12px 16px;
 }
 
-/* Improve table row touch targets on mobile */
-@media (max-width: 768px) {
+/* Improve table row touch targets on mobile/tablet */
+@media (max-width: 1023px) {
   .mantine-Table-tr {
     min-height: 60px;
   }
@@ -247,8 +343,8 @@ a:focus-visible,
               border-color var(--transition-normal) var(--transition-timing);
 }
 
-/* Improve notification positioning on mobile */
-@media (max-width: 768px) {
+/* Improve notification positioning on mobile/tablet */
+@media (max-width: 1023px) {
   .mantine-Notifications-root {
     bottom: calc(100px + 16px) !important;
   }
@@ -438,4 +534,69 @@ body {
 .mantine-Popover-dropdown {
   transition: background-color var(--transition-normal) var(--transition-timing),
               border-color var(--transition-normal) var(--transition-timing);
+}
+
+/* CRITICAL: Mobile/Tablet authentication page fix */
+@media (max-width: 1023px) {
+  /* Ensure all Mantine input wrappers allow clicks through */
+  .mantine-Input-wrapper,
+  .mantine-TextInput-wrapper,
+  .mantine-PasswordInput-wrapper,
+  .mantine-TextInput-root,
+  .mantine-PasswordInput-root {
+    pointer-events: auto !important;
+  }
+  
+  /* Force actual input elements to be clickable */
+  input,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  .mantine-Input-input,
+  .mantine-TextInput-input,
+  .mantine-PasswordInput-input,
+  .mantine-PasswordInput-input input {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    cursor: text !important;
+  }
+  
+  /* Force buttons and all their children to be clickable */
+  button,
+  button *,
+  button[type="submit"],
+  button[type="submit"] *,
+  button[type="button"],
+  button[type="button"] *,
+  .mantine-Button-root,
+  .mantine-Button-root *,
+  .mantine-Button-inner,
+  .mantine-Button-label,
+  a,
+  a * {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    cursor: pointer !important;
+  }
+  
+  /* Disable pointer events only on decorative elements */
+  .mantine-Input-label,
+  .mantine-TextInput-label,
+  .mantine-PasswordInput-label {
+    pointer-events: none !important;
+  }
+}
+
+
+/* CRITICAL FIX: Prevent notifications container from blocking clicks */
+.mantine-Notifications-root {
+  pointer-events: none !important;
+}
+
+/* But allow the actual notifications to be clickable */
+.mantine-Notifications-root > div,
+.mantine-Notification-root {
+  pointer-events: auto !important;
 }
