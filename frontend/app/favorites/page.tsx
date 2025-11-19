@@ -30,6 +30,7 @@ import {
   IconInfoCircle,
   IconAlertCircle,
   IconMusic,
+  IconDownload,
 } from '@tabler/icons-react';
 import PlayingAnimation from '@/components/PlayingAnimation';
 import { DownloadButton } from '@/components/DownloadButton';
@@ -152,6 +153,30 @@ function FavoritesPageContent() {
   const handleFavoriteRemoved = async () => {
     await fetchFavorites();
     await refreshFavorites();
+  };
+
+  const handleDownload = async (song: FavoriteSong, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const songUrl = getSongStreamUrl(song.id);
+      const response = await fetch(songUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${song.title} - ${song.artist}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download failed:', error);
+      notifications.show({
+        title: 'Download failed',
+        message: 'Failed to download song. Please try again.',
+        color: 'red',
+      });
+    }
   };
 
   return (
@@ -350,6 +375,13 @@ function FavoritesPageContent() {
                                 />
                               </Menu>
                               <Menu.Item
+                                leftSection={<IconDownload size={14} />}
+                                onClick={(e) => handleDownload(song, e)}
+                                style={{ fontSize: '13px', padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
+                              >
+                                Download
+                              </Menu.Item>
+                              <Menu.Item
                                 leftSection={<IconInfoCircle size={14} />}
                                 onClick={() => handleSongDetails(song.id)}
                                 style={{ fontSize: '13px', padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
@@ -458,6 +490,13 @@ function FavoritesPageContent() {
                               onSuccess={handleFavoriteRemoved}
                             />
                           </Menu>
+                          <Menu.Item
+                            leftSection={<IconDownload size={16} />}
+                            onClick={(e) => handleDownload(song, e)}
+                            style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
+                          >
+                            Download
+                          </Menu.Item>
                           <Menu.Item
                             leftSection={<IconInfoCircle size={16} />}
                             onClick={(e) => {
