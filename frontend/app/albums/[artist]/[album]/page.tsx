@@ -233,6 +233,15 @@ function AlbumDetailPageContent() {
                     >
                       Play Album
                     </Button>
+                    <Button
+                      leftSection={<IconEdit size={18} />}
+                      onClick={() => setShowEditModal(true)}
+                      variant="light"
+                      color="accent1"
+                      size="md"
+                    >
+                      Edit
+                    </Button>
                   </Group>
                 </Stack>
               </Group>
@@ -249,7 +258,7 @@ function AlbumDetailPageContent() {
                   isCurrentSong={currentSong?.id === song.id}
                   onPlay={handlePlaySong}
                   onViewDetails={handleViewDetails}
-                  onRefresh={fetchAlbumSongs}
+                  onRefresh={fetchAlbumData}
                 />
               ))}
             </Stack>
@@ -318,6 +327,23 @@ function AlbumDetailPageContent() {
           </>
         )}
       </Container>
+
+      {/* Edit Album Modal */}
+      {albumInfo && (
+        <EditAlbumModal
+          opened={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          artist={artistName}
+          album={albumName}
+          year={albumInfo.year}
+          genre={albumInfo.genre}
+          albumArt={albumInfo.albumArt}
+          onSuccess={() => {
+            fetchAlbumData();
+            router.refresh();
+          }}
+        />
+      )}
     </Box>
   );
 }
