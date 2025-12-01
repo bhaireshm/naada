@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: music-player-backend
+    env: node
+    region: oregon # or your preferred region
+    buildCommand: |
+      apt-get update
+      apt-get install -y chromaprint-tools
+      cd backend
+      npm install
+      npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    # Add your other environment variables here

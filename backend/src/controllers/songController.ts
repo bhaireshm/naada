@@ -8,6 +8,8 @@ import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { r2Client, bucketName } from '../config/storage';
 import { extractMetadata, AudioMetadata } from '../services/metadataService';
 import { parseArtists } from '../utils/artistParser';
+import { cleanMetadata } from '../utils/metadataCleaner';
+import { fetchMetadataFromMusicBrainz } from '../services/musicBrainzService';
 
 /**
  * Merge extracted metadata with user-provided metadata
@@ -78,7 +80,31 @@ export async function uploadSong(
     };
 
     // Merge extracted and user-provided metadata
-    const mergedMetadata = mergeMetadata(extractedMetadata, userProvidedMetadata, filename);
+    let mergedMetadata = mergeMetadata(extractedMetadata, userProvidedMetadata, filename);
+
+    // Clean metadata (remove URLs, domain names, etc.)
+    mergedMetadata = cleanMetadata(mergedMetadata);
+
+    // If artist is unknown or missing, try to fetch from MusicBrainz
+    if (!mergedMetadata.artist || mergedMetadata.artist === 'Unknown Artist') {
+      console.log('Metadata incomplete, attempting to fetch from MusicBrainz...');
+      const mbMetadata = await fetchMetadataFromMusicBrainz(
+        mergedMetadata.title || filename.replace(/\.[^/.]+$/, ''),
+        mergedMetadata.artist !== 'Unknown Artist' ? mergedMetadata.artist : undefined
+      );
+
+      if (mbMetadata) {
+        console.log('Found metadata from MusicBrainz:', mbMetadata);
+        mergedMetadata = {
+          ...mergedMetadata,
+          title: mbMetadata.title || mergedMetadata.title,
+          artist: mbMetadata.artist || mergedMetadata.artist,
+          album: mbMetadata.album || mergedMetadata.album,
+          year: mbMetadata.year || mergedMetadata.year,
+          genre: mbMetadata.genre || mergedMetadata.genre
+        };
+      }
+    }
 
     // Validate that title and artist are present after merging
     if (!mergedMetadata.title || !mergedMetadata.artist) {
@@ -529,15 +555,18 @@ export async function updateSong(
     // Check if user is the uploader (optional, depending on requirements)
     // if (song.uploadedBy.toString() !== req.userId) { ... }
 
+    // Clean input metadata
+    const cleanedInput = cleanMetadata({ title, artist, album, genre });
+
     // Update fields
-    if (title) song.title = title;
+    if (title) song.title = cleanedInput.title;
     if (artist) {
-      song.artist = artist;
-      song.artists = parseArtists(artist);
+      song.artist = cleanedInput.artist;
+      song.artists = parseArtists(cleanedInput.artist);
     }
-    if (album !== undefined) song.album = album;
+    if (album !== undefined) song.album = cleanedInput.album;
     if (year !== undefined) song.year = year;
-    if (genre !== undefined) song.genre = genre;
+    if (genre !== undefined) song.genre = cleanedInput.genre;
     if (lyrics !== undefined) song.lyrics = lyrics;
 
     await song.save();

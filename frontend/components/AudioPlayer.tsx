@@ -39,6 +39,7 @@ import RepeatButton from '@/components/RepeatButton';
 import PlaybackSpeedControl from '@/components/PlaybackSpeedControl';
 import ArtistName from '@/components/ArtistName';
 import EditSongModal from '@/components/EditSongModal';
+import QueueOverlay from '@/components/QueueOverlay';
 
 interface AudioPlayerProps {
   song: Song | null;
@@ -48,8 +49,6 @@ interface AudioPlayerProps {
 export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
   const router = useRouter();
   const theme = useMantineTheme();
-
-
 
   const {
     currentSong,
@@ -69,6 +68,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     loadSong,
     next,
     previous,
+    jumpToQueueIndex,
   } = useAudioPlayerContext();
 
   // Enhanced colors for better visibility
@@ -82,6 +82,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
 
   const [isHovering, setIsHovering] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [hoverTime, setHoverTime] = useState<number | null>(null);
@@ -171,6 +172,17 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
 
   return (
     <>
+      {/* Queue Overlay */}
+      <QueueOverlay
+        isOpen={showQueue}
+        queue={queue}
+        currentIndex={currentIndex}
+        onPlay={(index) => {
+          jumpToQueueIndex(index);
+        }}
+        onClose={() => setShowQueue(false)}
+      />
+
       {/* Lyrics Overlay */}
       {showLyrics && (
         <Box
@@ -482,7 +494,11 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             </Tooltip>
 
             <Tooltip label="Queue">
-              <ActionIcon variant="subtle" color="dark">
+              <ActionIcon
+                variant={showQueue ? "filled" : "subtle"}
+                color={showQueue ? "primary" : "dark"}
+                onClick={() => setShowQueue(!showQueue)}
+              >
                 <IconList size={20} />
               </ActionIcon>
             </Tooltip>
