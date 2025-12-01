@@ -1,7 +1,7 @@
 import { Router, type Router as RouterType } from 'express';
 import multer from 'multer';
 import { verifyToken } from '../middleware/auth';
-import { uploadSong, streamSong, getAllSongs, getSongMetadata, updateSong } from '../controllers/songController';
+import { uploadSong, streamSong, getAllSongs, getSongMetadata, updateSong, deleteSong } from '../controllers/songController';
 
 const router: RouterType = Router();
 
@@ -48,5 +48,8 @@ router.get('/:id', verifyToken, streamSong);
 
 // PUT /songs/:id - Update song metadata
 router.put('/:id', verifyToken, updateSong);
+
+// DELETE /songs/:id - Delete a song (only uploader can delete)
+router.delete('/:id', verifyToken, deleteSong);
 
 export default router;

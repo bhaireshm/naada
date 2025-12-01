@@ -169,6 +169,7 @@ export async function uploadSong(
         duplicate.album = mergedMetadata.album;
         duplicate.year = mergedMetadata.year?.toString();
         duplicate.genre = mergedMetadata.genre?.join(', ');
+        duplicate.duration = extractedMetadata.duration;
         duplicate.fileKey = fileKey;
         duplicate.mimeType = mimeType;
 
@@ -298,6 +299,7 @@ export async function uploadSong(
       genre: mergedMetadata.genre?.join(', '),
       fileKey,
       mimeType,
+      duration: extractedMetadata.duration,
       uploadedBy: req.userId,
       fingerprint: fingerprintResult.fingerprint,
     });
@@ -314,6 +316,7 @@ export async function uploadSong(
         album: song.album,
         year: song.year,
         genre: song.genre,
+        duration: song.duration,
         mimeType: song.mimeType,
         createdAt: song.createdAt,
       },
@@ -593,6 +596,88 @@ export async function updateSong(
       error: {
         code: 'UPDATE_FAILED',
         message: 'Failed to update song',
+        details: errorMessage,
+      },
+    });
+  }
+}
+
+/**
+ * Delete a song
+ * DELETE /songs/:id
+ * Only the uploader can delete their own songs
+ */
+export async function deleteSong(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const { id } = req.params;
+
+    // Find song by ID
+    const song = await Song.findById(id);
+
+    if (!song) {
+      res.status(404).json({
+        error: {
+          code: 'SONG_NOT_FOUND',
+          message: 'Song not found',
+        },
+      });
+      return;
+    }
+
+    // Check if user is the uploader (permission check)
+    if (song.uploadedBy !== req.userId) {
+      res.status(403).json({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to delete this song',
+          details: 'Only the uploader can delete their songs',
+        },
+      });
+      return;
+    }
+
+    // Delete file from R2 storage
+    try {
+      console.log(`Deleting file from R2: ${song.fileKey}`);
+      const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: song.fileKey,
+      });
+
+      await r2Client.send(deleteCommand);
+      console.log('File deleted from R2 successfully');
+    } catch (storageError) {
+      console.error('Failed to delete file from R2:', storageError);
+      // Continue with database deletion even if R2 deletion fails
+      // The file will be orphaned but the song record will be removed
+    }
+
+    // Delete song from database
+    await Song.findByIdAndDelete(id);
+    console.log('Song deleted from database');
+
+    res.status(200).json({
+      message: 'Song deleted successfully',
+      deletedSong: {
+        id: song._id,
+        title: song.title,
+        artist: song.artist,
+      },
+    });
+  } catch (error) {
+    console.error('Delete song error:', error);
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    res.status(500).json({
+      error: {
+        code: 'DELETE_FAILED',
+        message: 'Failed to delete song',
         details: errorMessage,
       },
     });
