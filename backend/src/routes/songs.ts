@@ -44,8 +44,15 @@ router.post('/upload', verifyToken, upload.single('file'), uploadSong);
 // GET /songs/ai-metadata-status - Get AI metadata processing status
 router.get('/ai-metadata-status', verifyToken, getAIMetadataStatus);
 
+import { enrichSongMetadata } from '../controllers/metadataEnrichmentController';
+
+// ... existing imports ...
+
 // POST /songs/process-ai-metadata - Process existing songs to extract AI metadata
 router.post('/process-ai-metadata', verifyToken, processAIMetadata);
+
+// POST /songs/:id/enrich - Enrich song metadata from online sources
+router.post('/:id/enrich', verifyToken, enrichSongMetadata);
 
 // GET /songs/:id/metadata - Get song metadata by ID
 router.get('/:id/metadata', verifyToken, getSongMetadata);

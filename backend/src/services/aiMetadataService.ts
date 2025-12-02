@@ -3,12 +3,6 @@
  * 
  * This service provides intelligent metadata extraction and enhancement
  * using audio analysis and machine learning techniques.
- * 
- * Features:
- * - Genre classification from audio features
- * - Mood detection based on tempo, key, and energy
- * - Energy level calculation
- * - Smart metadata cleaning and normalization
  */
 
 import { parseBuffer } from 'music-metadata';
@@ -38,15 +32,14 @@ export async function extractAIMetadata(
         // Extract tempo (BPM) if available
         const tempo = metadata.common.bpm;
 
-        // Extract key and mode if available
+        // Extract key if available
         const key = metadata.common.key;
-        const mode = metadata.common.mode;
 
         // Calculate energy level based on available metrics
         aiMetadata.energy = calculateEnergyLevel(tempo, metadata.format);
 
-        // Detect mood based on tempo, key, and mode
-        aiMetadata.mood = detectMood(tempo, key, mode, aiMetadata.energy);
+        // Detect mood based on tempo, key, and energy (mode not available in common tags)
+        aiMetadata.mood = detectMood(tempo, key, undefined, aiMetadata.energy);
 
         // Combine file genres with existing DB genres
         const fileGenres = metadata.common.genre || [];
@@ -109,7 +102,7 @@ function calculateEnergyLevel(tempo?: number, format?: any): number {
  */
 function detectMood(
     tempo?: number,
-    key?: string,
+    _key?: string,
     mode?: string,
     energy?: number
 ): string {
@@ -266,10 +259,10 @@ function hasGenreFamily(genres: Set<string>, family: string[]): boolean {
  * This can be used to update songs that were uploaded before AI features
  */
 export async function analyzeExistingMetadata(
-    title: string,
-    artist: string,
+    _title: string,
+    _artist: string,
     genre?: string,
-    duration?: number
+    _duration?: number
 ): Promise<Partial<AIMetadata>> {
     const aiMetadata: Partial<AIMetadata> = {};
 
