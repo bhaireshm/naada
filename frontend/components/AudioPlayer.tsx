@@ -168,11 +168,8 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     return (
       <Box
         style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 80,
+          width: '100%',
+          height: '100%',
           background: playerBg,
           backdropFilter: 'blur(20px)',
           borderTop: `1px solid ${theme.colors.gray[2]}`,
@@ -262,11 +259,8 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
 
       <Box
         style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 80,
+          width: '100%',
+          height: '100%',
           background: playerBg,
           backdropFilter: 'blur(20px)',
           borderTop: `1px solid ${theme.colors.gray[2]}`,
