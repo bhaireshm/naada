@@ -39,7 +39,10 @@ const USER_AGENT = 'NaadaMusicPlayer/1.0.0 ( bhairesh@mailinator.com )'; // Requ
 export async function searchMusicBrainz(title: string, artist: string): Promise<EnrichedMetadata | null> {
     try {
         // 1. Search for the recording
-        const query = `recording:"${title}" AND artist:"${artist}"`;
+        let query = `recording:"${title}"`;
+        if (artist) {
+            query += ` AND artist:"${artist}"`;
+        }
         const searchUrl = `https://musicbrainz.org/ws/2/recording?query=${encodeURIComponent(query)}&fmt=json`;
 
         const response = await axios.get(searchUrl, {

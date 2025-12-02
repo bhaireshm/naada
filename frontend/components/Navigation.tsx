@@ -79,7 +79,7 @@ export default function Navigation({ opened, toggle }: NavigationProps) {
           )}
 
           {/* Logo - Only visible on mobile or if sidebar is hidden */}
-          <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <Link href={user ? '/library' : '/'} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
             <Group gap={theme.spacing.sm} align="center" wrap="nowrap" visibleFrom="xs">
               <div
                 style={{

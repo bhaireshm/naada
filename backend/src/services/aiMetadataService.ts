@@ -6,11 +6,21 @@
  */
 
 import { parseBuffer } from 'music-metadata';
+import { Song } from '../models/Song';
+import { getFile } from './storageService';
+import { Readable } from 'stream';
 
 export interface AIMetadata {
     mood?: string;
     aiGenres?: string[];
     energy?: number;
+}
+
+export interface BatchProcessingResult {
+    total: number;
+    processed: number;
+    failed: number;
+    results: Array<{ id: string; title: string; status: string; error?: string }>;
 }
 
 /**
@@ -65,6 +75,130 @@ export async function extractAIMetadata(
         });
         return {};
     }
+}
+
+/**
+ * Process a batch of songs to extract AI metadata
+ */
+export async function processBatch(songIds?: string[], processAll?: boolean): Promise<BatchProcessingResult> {
+    // Find songs to process
+    let songsToProcess;
+
+    if (processAll) {
+        // Process all songs without AI metadata
+        songsToProcess = await Song.find({
+            $or: [
+                { mood: { $exists: false } },
+                { aiGenres: { $exists: false } },
+                { energy: { $exists: false } },
+            ],
+        }).lean();
+        console.log(`Found ${songsToProcess.length} songs without AI metadata`);
+    } else if (songIds && Array.isArray(songIds)) {
+        // Process specific songs
+        songsToProcess = await Song.find({ _id: { $in: songIds } }).lean();
+        console.log(`Processing ${songsToProcess.length} specific songs`);
+    } else {
+        throw new Error('Either provide songIds array or set processAll to true');
+    }
+
+    if (songsToProcess.length === 0) {
+        return {
+            total: 0,
+            processed: 0,
+            failed: 0,
+            results: []
+        };
+    }
+
+    // Process songs in batches to avoid memory issues
+    const batchSize = 10;
+    let processed = 0;
+    let failed = 0;
+    const results: Array<{ id: string; title: string; status: string; error?: string }> = [];
+
+    for (let i = 0; i < songsToProcess.length; i += batchSize) {
+        const batch = songsToProcess.slice(i, i + batchSize);
+
+        await Promise.all(
+            batch.map(async (song) => {
+                try {
+                    console.log(`Processing song: ${song.title} by ${song.artist}`);
+
+                    // Download the audio file from storage
+                    const stream = await getFile(song.fileKey);
+
+                    // Convert stream to buffer
+                    const chunks: Buffer[] = [];
+                    const readableStream = stream as Readable;
+
+                    for await (const chunk of readableStream) {
+                        chunks.push(Buffer.from(chunk));
+                    }
+                    const fileBuffer = Buffer.concat(chunks);
+
+                    // Parse existing genres from DB if available
+                    let existingGenres: string[] = [];
+                    if (song.genre) {
+                        // Handle if genre is already an array or a string
+                        if (Array.isArray(song.genre)) {
+                            existingGenres = song.genre;
+                        } else if (typeof song.genre === 'string') {
+                            existingGenres = song.genre.split(',').map(g => g.trim()).filter(g => g.length > 0);
+                        }
+                    }
+
+                    // Extract AI metadata, passing existing genres
+                    const aiMetadata = await extractAIMetadata(fileBuffer, existingGenres);
+
+                    // Prepare update object
+                    const updateData: any = {};
+                    if (aiMetadata.mood) updateData.mood = aiMetadata.mood;
+                    if (aiMetadata.aiGenres && aiMetadata.aiGenres.length > 0) {
+                        updateData.aiGenres = aiMetadata.aiGenres;
+                    }
+                    if (aiMetadata.energy !== undefined) updateData.energy = aiMetadata.energy;
+
+                    // Fix potential schema issues with genre (if it's an array in DB but String in schema)
+                    if (Array.isArray(song.genre)) {
+                        updateData.genre = (song.genre as unknown as string[]).join(', ');
+                    }
+
+                    // Update using updateOne to bypass document validation issues
+                    await Song.updateOne({ _id: song._id }, { $set: updateData });
+
+                    processed++;
+                    results.push({
+                        id: (song._id as string).toString(),
+                        title: song.title,
+                        status: 'success',
+                    });
+
+                    console.log(`✓ Processed: ${song.title} - Mood: ${aiMetadata.mood}, Energy: ${aiMetadata.energy}`);
+                } catch (error) {
+                    failed++;
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                    results.push({
+                        id: (song._id as string).toString(),
+                        title: song.title,
+                        status: 'failed',
+                        error: errorMessage,
+                    });
+                    console.error(`✗ Failed to process ${song.title}:`, errorMessage);
+                }
+            })
+        );
+
+        // Log progress
+        console.log(`Progress: ${Math.min(i + batchSize, songsToProcess.length)}/${songsToProcess.length} songs processed`);
+    }
+
+    return {
+        total: songsToProcess.length,
+        processed,
+        failed,
+        results
+    };
 }
 
 /**

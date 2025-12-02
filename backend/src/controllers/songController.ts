@@ -9,7 +9,7 @@ import { r2Client, bucketName } from '../config/storage';
 import { extractMetadata, AudioMetadata } from '../services/metadataService';
 import { parseArtists } from '../utils/artistParser';
 import { cleanMetadata } from '../utils/metadataCleaner';
-import { fetchMetadataFromMusicBrainz } from '../services/musicBrainzService';
+import { searchMusicBrainz } from '../services/metadataEnrichmentService';
 
 /**
  * Merge extracted metadata with user-provided metadata
@@ -88,10 +88,11 @@ export async function uploadSong(
     // If artist is unknown or missing, try to fetch from MusicBrainz
     if (!mergedMetadata.artist || mergedMetadata.artist === 'Unknown Artist') {
       console.log('Metadata incomplete, attempting to fetch from MusicBrainz...');
-      const mbMetadata = await fetchMetadataFromMusicBrainz(
-        mergedMetadata.title || filename.replace(/\.[^/.]+$/, ''),
-        mergedMetadata.artist !== 'Unknown Artist' ? mergedMetadata.artist : undefined
-      );
+      // Only search if we have a title
+      const searchTitle = mergedMetadata.title || filename.replace(/\.[^/.]+$/, '');
+      const searchArtist = mergedMetadata.artist !== 'Unknown Artist' ? mergedMetadata.artist : '';
+
+      const mbMetadata = await searchMusicBrainz(searchTitle, searchArtist);
 
       if (mbMetadata) {
         console.log('Found metadata from MusicBrainz:', mbMetadata);
@@ -100,8 +101,8 @@ export async function uploadSong(
           title: mbMetadata.title || mergedMetadata.title,
           artist: mbMetadata.artist || mergedMetadata.artist,
           album: mbMetadata.album || mergedMetadata.album,
-          year: mbMetadata.year || mergedMetadata.year,
-          genre: mbMetadata.genre || mergedMetadata.genre
+          year: mbMetadata.year ? parseInt(mbMetadata.year, 10) : mergedMetadata.year,
+          genre: mbMetadata.genres || mergedMetadata.genre
         };
       }
     }
