@@ -15,6 +15,10 @@ export interface ISong extends Document {
   uploadedBy: string; // Firebase UID
   fingerprint: string;
   createdAt: Date;
+  // AI-enhanced metadata (optional)
+  mood?: string; // AI-detected mood (e.g., 'happy', 'sad', 'energetic')
+  aiGenres?: string[]; // AI-detected genres (can be more accurate than tags)
+  energy?: number; // Energy level 0-1 (0 = calm, 1 = energetic)
 }
 
 const songSchema = new Schema<ISong>({
@@ -75,6 +79,21 @@ const songSchema = new Schema<ISong>({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  // AI-enhanced metadata fields (optional)
+  mood: {
+    type: String,
+    required: false,
+  },
+  aiGenres: {
+    type: [String],
+    required: false,
+  },
+  energy: {
+    type: Number,
+    required: false,
+    min: 0,
+    max: 1,
   },
 });
 

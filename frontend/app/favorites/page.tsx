@@ -95,7 +95,7 @@ function FavoritesPageContent() {
   const [displayCount, setDisplayCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [offlineSongs, setOfflineSongs] = useState<Set<string>>(new Set());
-  const { setQueue, isPlaying, currentSong: audioCurrentSong } = useAudioPlayerContext();
+  const { setQueue, isPlaying, currentSong: audioCurrentSong, play, pause } = useAudioPlayerContext();
   const { refreshFavorites } = useFavorites();
   const router = useRouter();
   const theme = useMantineTheme();
@@ -123,7 +123,7 @@ function FavoritesPageContent() {
         favoritedAt: fav.createdAt,
       })) as FavoriteSong[];
       setSongs(favoriteSongs);
-      
+
       // Check offline status for all songs
       const offlineSet = new Set<string>();
       for (const song of favoriteSongs) {
@@ -147,7 +147,7 @@ function FavoritesPageContent() {
 
   const loadMore = () => {
     if (isLoadingMore || !hasMore) return;
-    
+
     setIsLoadingMore(true);
     setTimeout(() => {
       setDisplayCount(prev => Math.min(prev + 20, songs.length));
@@ -156,7 +156,15 @@ function FavoritesPageContent() {
   };
 
   const handlePlaySong = (song: FavoriteSong, index: number) => {
-    setQueue(songs, index);
+    const isCurrentlyPlaying = audioCurrentSong?.id === song.id && isPlaying;
+
+    if (isCurrentlyPlaying) {
+      pause();
+    } else if (audioCurrentSong?.id === song.id) {
+      play();
+    } else {
+      setQueue(songs, index);
+    }
   };
 
   const handleSongDetails = (songId: string) => {
@@ -170,9 +178,9 @@ function FavoritesPageContent() {
 
   const handleDownload = async (song: FavoriteSong, e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     const isOffline = offlineSongs.has(song.id);
-    
+
     if (isOffline) {
       // Remove from offline storage
       try {
@@ -200,7 +208,7 @@ function FavoritesPageContent() {
     // Download song for offline
     try {
       const songUrl = getSongStreamUrl(song.id);
-      
+
       await downloadManager.queueDownload(
         song.id,
         song.title,
@@ -263,7 +271,7 @@ function FavoritesPageContent() {
                   <IconHeart size={32} color={theme.colors.primary[0]} />
                 </Box>
                 <div>
-                  <Title 
+                  <Title
                     order={1}
                     style={{
                       backgroundImage: `linear-gradient(135deg, ${theme.colors.pink[8]} 0%, ${theme.colors.accent1[7]} 100%)`,
@@ -366,7 +374,10 @@ function FavoritesPageContent() {
                           : undefined
                       }
                     >
-                      <Table.Td>
+                      <Table.Td
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleSongDetails(song.id)}
+                      >
                         <Text fw={audioCurrentSong?.id === song.id ? 600 : 400}>
                           {song.title}
                         </Text>
@@ -387,7 +398,7 @@ function FavoritesPageContent() {
                             variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
                             color="accent1"
                             onClick={() => handlePlaySong(song, index)}
-                            aria-label={`Play ${song.title}`}
+                            aria-label={audioCurrentSong?.id === song.id && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
                           >
                             {audioCurrentSong?.id === song.id && isPlaying ? (
                               <PlayingAnimation size={18} color="white" />
@@ -417,7 +428,7 @@ function FavoritesPageContent() {
                                 withArrow
                               >
                                 <Menu.Target>
-                                  <Menu.Item 
+                                  <Menu.Item
                                     leftSection={<IconPlaylistAdd size={14} />}
                                     style={{ fontSize: '13px', padding: `${theme.spacing.xs} ${theme.spacing.sm}` }}
                                   >
@@ -466,14 +477,17 @@ function FavoritesPageContent() {
                         ? `linear-gradient(135deg, ${theme.colors.accent1[1]} 0%, ${theme.colors.secondary[1]} 100%)`
                         : theme.colors.primary[9],
                     borderRadius: theme.radius.md,
-                    border: audioCurrentSong?.id === song.id 
-                      ? `1px solid ${theme.colors.accent1[4]}` 
+                    border: audioCurrentSong?.id === song.id
+                      ? `1px solid ${theme.colors.accent1[4]}`
                       : `1px solid ${theme.colors.secondary[8]}`,
                     transition: `all ${theme.other.transitionDuration.normal} ${theme.other.easingFunctions.easeInOut}`,
                   }}
                 >
                   <Group justify="space-between" wrap="nowrap" align="flex-start">
-                    <Box style={{ minWidth: 0, flex: 1 }}>
+                    <Box
+                      style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
+                      onClick={() => handleSongDetails(song.id)}
+                    >
                       <Text
                         fw={audioCurrentSong?.id === song.id ? 600 : 400}
                         truncate
@@ -493,7 +507,7 @@ function FavoritesPageContent() {
                           e.stopPropagation();
                           handlePlaySong(song, index);
                         }}
-                        aria-label={`Play ${song.title}`}
+                        aria-label={audioCurrentSong?.id === song.id && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
                         style={{ minWidth: 44, minHeight: 44 }}
                       >
                         {audioCurrentSong?.id === song.id && isPlaying ? (
@@ -504,9 +518,9 @@ function FavoritesPageContent() {
                       </ActionIcon>
                       <Menu position="bottom-end" shadow="md" width={180} zIndex={500}>
                         <Menu.Target>
-                          <ActionIcon 
-                            variant="subtle" 
-                            color="gray" 
+                          <ActionIcon
+                            variant="subtle"
+                            color="gray"
                             size={44}
                             style={{ minWidth: 44, minHeight: 44 }}
                             aria-label="More options"
@@ -534,7 +548,7 @@ function FavoritesPageContent() {
                             zIndex={501}
                           >
                             <Menu.Target>
-                              <Menu.Item 
+                              <Menu.Item
                                 leftSection={<IconPlaylistAdd size={16} />}
                                 style={{ fontSize: '14px', padding: `${theme.spacing.sm} ${theme.spacing.md}` }}
                               >

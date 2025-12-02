@@ -302,6 +302,10 @@ export async function uploadSong(
       duration: extractedMetadata.duration,
       uploadedBy: req.userId,
       fingerprint: fingerprintResult.fingerprint,
+      // AI-enhanced metadata
+      mood: extractedMetadata.mood,
+      aiGenres: extractedMetadata.aiGenres,
+      energy: extractedMetadata.energy,
     });
 
     await song.save();

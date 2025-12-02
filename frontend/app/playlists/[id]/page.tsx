@@ -55,7 +55,7 @@ function PlaylistDetailPageContent() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { setQueue, isPlaying, currentSong: audioCurrentSong, addToQueue } = useAudioPlayerContext();
+  const { setQueue, isPlaying, currentSong: audioCurrentSong, addToQueue, play, pause } = useAudioPlayerContext();
   const theme = useMantineTheme();
 
   // Prevent hydration mismatch
@@ -177,8 +177,16 @@ function PlaylistDetailPageContent() {
    * Play a song from the playlist
    */
   const handlePlaySong = (song: Song, index: number) => {
-    // Set the queue to all playlist songs starting from the selected song
-    setQueue(playlistSongs, index);
+    const isCurrentlyPlaying = audioCurrentSong?.id === song.id && isPlaying;
+
+    if (isCurrentlyPlaying) {
+      pause();
+    } else if (audioCurrentSong?.id === song.id) {
+      play();
+    } else {
+      // Set the queue to all playlist songs starting from the selected song
+      setQueue(playlistSongs, index);
+    }
   };
 
   /**
@@ -392,7 +400,10 @@ function PlaylistDetailPageContent() {
                           {index + 1}
                         </Text>
                       </Table.Td>
-                      <Table.Td>
+                      <Table.Td
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleSongDetails(song.id)}
+                      >
                         <Text fw={audioCurrentSong?.id === song.id ? 600 : 400}>
                           {song.title}
                         </Text>
@@ -413,7 +424,7 @@ function PlaylistDetailPageContent() {
                             variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
                             color="accent1"
                             onClick={() => handlePlaySong(song, index)}
-                            aria-label={`Play ${song.title}`}
+                            aria-label={audioCurrentSong?.id === song.id && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
                           >
                             {audioCurrentSong?.id === song.id && isPlaying ? (
                               <PlayingAnimation size={18} color="white" />
@@ -521,7 +532,7 @@ function PlaylistDetailPageContent() {
                         color="accent1"
                         size={44}
                         onClick={() => handlePlaySong(song, index)}
-                        aria-label={`Play ${song.title}`}
+                        aria-label={audioCurrentSong?.id === song.id && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
                       >
                         {audioCurrentSong?.id === song.id && isPlaying ? (
                           <PlayingAnimation size={22} color="white" />
@@ -595,7 +606,10 @@ function PlaylistDetailPageContent() {
                       </Menu>
                     </Group>
                   </Group>
-                  <Box>
+                  <Box
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => handleSongDetails(song.id)}
+                  >
                     <Text
                       fw={audioCurrentSong?.id === song.id ? 600 : 400}
                       truncate

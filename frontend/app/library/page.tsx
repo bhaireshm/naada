@@ -97,7 +97,7 @@ function LibraryPageContent() {
   const [displayCount, setDisplayCount] = useState(20);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [offlineSongs, setOfflineSongs] = useState<Set<string>>(new Set());
-  const { setQueue, isPlaying, currentSong: audioCurrentSong, addToQueue } = useAudioPlayerContext();
+  const { setQueue, isPlaying, currentSong: audioCurrentSong, addToQueue, play, pause } = useAudioPlayerContext();
   const router = useRouter();
   const searchParams = useSearchParams();
   const theme = useMantineTheme();
@@ -182,8 +182,18 @@ function LibraryPageContent() {
    * Handle song selection for playback
    */
   const handlePlaySong = (song: Song, index: number) => {
-    // Set the queue to filtered songs starting from the selected song
-    setQueue(filteredSongs, index);
+    const isCurrentlyPlaying = audioCurrentSong?.id === song.id && isPlaying;
+
+    if (isCurrentlyPlaying) {
+      // If this song is currently playing, pause it
+      pause();
+    } else if (audioCurrentSong?.id === song.id) {
+      // If this song is current but paused, resume it
+      play();
+    } else {
+      // Otherwise, set the queue to filtered songs starting from the selected song
+      setQueue(filteredSongs, index);
+    }
   };
 
   /**
@@ -480,7 +490,10 @@ function LibraryPageContent() {
                           : undefined
                       }
                     >
-                      <Table.Td>
+                      <Table.Td
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleSongDetails(song.id)}
+                      >
                         <Text fw={audioCurrentSong?.id === song.id ? 600 : 400}>
                           {song.title}
                         </Text>
@@ -501,7 +514,7 @@ function LibraryPageContent() {
                             variant={audioCurrentSong?.id === song.id ? 'filled' : 'subtle'}
                             color="accent1"
                             onClick={() => handlePlaySong(song, index)}
-                            aria-label={`Play ${song.title}`}
+                            aria-label={audioCurrentSong?.id === song.id && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
                           >
                             {audioCurrentSong?.id === song.id && isPlaying ? (
                               <PlayingAnimation size={18} color="white" />
@@ -608,7 +621,10 @@ function LibraryPageContent() {
                   }}
                 >
                   <Group justify="space-between" wrap="nowrap" align="flex-start">
-                    <Box style={{ minWidth: 0, flex: 1 }}>
+                    <Box
+                      style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
+                      onClick={() => handleSongDetails(song.id)}
+                    >
                       <Text
                         fw={audioCurrentSong?.id === song.id ? 600 : 400}
                         truncate
@@ -628,7 +644,7 @@ function LibraryPageContent() {
                           e.stopPropagation();
                           handlePlaySong(song, index);
                         }}
-                        aria-label={`Play ${song.title}`}
+                        aria-label={audioCurrentSong?.id === song.id && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
                         style={{ minWidth: 44, minHeight: 44 }}
                       >
                         {audioCurrentSong?.id === song.id && isPlaying ? (

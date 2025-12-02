@@ -2,6 +2,7 @@ import { Router, type Router as RouterType } from 'express';
 import multer from 'multer';
 import { verifyToken } from '../middleware/auth';
 import { uploadSong, streamSong, getAllSongs, getSongMetadata, updateSong, deleteSong } from '../controllers/songController';
+import { processAIMetadata, getAIMetadataStatus } from '../controllers/aiMetadataController';
 
 const router: RouterType = Router();
 
@@ -39,6 +40,12 @@ router.get('/', verifyToken, getAllSongs);
 
 // POST /songs/upload - Upload a new song
 router.post('/upload', verifyToken, upload.single('file'), uploadSong);
+
+// GET /songs/ai-metadata-status - Get AI metadata processing status
+router.get('/ai-metadata-status', verifyToken, getAIMetadataStatus);
+
+// POST /songs/process-ai-metadata - Process existing songs to extract AI metadata
+router.post('/process-ai-metadata', verifyToken, processAIMetadata);
 
 // GET /songs/:id/metadata - Get song metadata by ID
 router.get('/:id/metadata', verifyToken, getSongMetadata);

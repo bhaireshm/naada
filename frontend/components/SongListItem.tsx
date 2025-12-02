@@ -124,7 +124,10 @@ export default function SongListItem({
       }}
     >
       <Group justify="space-between" wrap="nowrap" align="flex-start">
-        <Box style={{ minWidth: 0, flex: 1 }}>
+        <Box
+          style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
+          onClick={() => onViewDetails(song.id)}
+        >
           <Text fw={isCurrentSong ? 600 : 400} truncate>
             {song.title}
           </Text>
@@ -146,7 +149,7 @@ export default function SongListItem({
               e.stopPropagation();
               onPlay(song, index);
             }}
-            aria-label={`Play ${song.title}`}
+            aria-label={isCurrentSong && isPlaying ? `Pause ${song.title}` : `Play ${song.title}`}
             style={{ minWidth: 44, minHeight: 44 }}
           >
             {isCurrentSong && isPlaying ? (
