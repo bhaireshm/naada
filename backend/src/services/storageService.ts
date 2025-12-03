@@ -1,6 +1,7 @@
 import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { r2Client, bucketName } from '../config/storage';
 import { Readable } from 'stream';
+import { sanitizeMetadataForHeaders } from '../utils/headerSanitizer';
 
 /**
  * Upload a file to Cloudflare R2 storage
@@ -18,19 +19,23 @@ export async function uploadFile(
   metadata?: Record<string, string>
 ): Promise<string> {
   try {
+    // Sanitize metadata values to ensure they're valid for HTTP headers
+    const sanitizedMetadata = metadata ? sanitizeMetadataForHeaders(metadata) : undefined;
+
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
       Body: fileBuffer,
       ContentType: mimeType,
-      Metadata: metadata,
+      Metadata: sanitizedMetadata,
     });
 
     await r2Client.send(command);
-    
+
     console.log(`File uploaded successfully to R2: ${key}`);
     if (metadata) {
-      console.log('Custom metadata attached:', metadata);
+      console.log('Original metadata:', metadata);
+      console.log('Sanitized metadata attached:', sanitizedMetadata);
     }
     return key;
   } catch (error) {
@@ -61,14 +66,14 @@ export async function getFile(
     });
 
     const response = await r2Client.send(command);
-    
+
     if (!response.Body) {
       throw new Error('No file content returned from R2');
     }
 
     // Convert the response body to a readable stream
     const stream = response.Body as Readable;
-    
+
     console.log(`File retrieved successfully from R2: ${key}`);
     return stream;
   } catch (error) {
