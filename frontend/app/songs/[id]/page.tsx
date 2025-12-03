@@ -8,6 +8,7 @@ import { useAudioPlayerContext } from '@/contexts/AudioPlayerContext';
 import AddToPlaylistMenu from '@/components/AddToPlaylistMenu';
 import { useSongActions } from '@/hooks/useSongActions';
 import EditSongModal from '@/components/EditSongModal';
+import FavoriteButton from '@/components/FavoriteButton';
 import {
   Container,
   Paper,
@@ -21,6 +22,10 @@ import {
   Skeleton,
   Alert,
   Menu,
+  useMantineTheme,
+  Grid,
+  Badge,
+  ActionIcon,
 } from '@mantine/core';
 import {
   IconPlayerPlay,
@@ -31,11 +36,16 @@ import {
   IconList,
   IconEdit,
   IconTrash,
+  IconClock,
+  IconCalendar,
+  IconDisc,
+  IconMicrophone,
 } from '@tabler/icons-react';
 
 function SongDetailsPageContent() {
   const params = useParams();
   const router = useRouter();
+  const theme = useMantineTheme();
   const songId = params.id as string;
 
   const [song, setSong] = useState<Song | null>(null);
@@ -95,336 +105,308 @@ function SongDetailsPageContent() {
 
   const isCurrentlyPlaying = audioCurrentSong?.id === songId;
 
-  return (
-    <Box pb={120}>
-      <Container size="md" py="xl">
-        {/* Back Button */}
-        <Button
-          variant="subtle"
-          leftSection={<IconArrowLeft size={18} />}
-          onClick={() => router.back()}
-          mb="xl"
-        >
+  if (loading) {
+    return (
+      <Container size="lg" py="xl">
+        <Button variant="subtle" leftSection={<IconArrowLeft size={18} />} onClick={() => router.back()} mb="xl">
           Back
         </Button>
-
-        {/* Loading State */}
-        {loading && (
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
-            <Stack gap="xl">
-              <Group align="flex-start" wrap="nowrap">
-                <Skeleton height={200} width={200} radius="md" />
-                <Stack gap="md" style={{ flex: 1 }}>
-                  <Skeleton height={32} width="80%" />
-                  <Skeleton height={24} width="60%" />
-                  <Skeleton height={20} width="40%" />
-                  <Skeleton height={20} width="50%" />
-                </Stack>
+        <Grid>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Skeleton height={350} radius="md" />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 8 }}>
+            <Stack gap="md">
+              <Skeleton height={50} width="60%" />
+              <Skeleton height={30} width="40%" />
+              <Skeleton height={20} width="30%" />
+              <Group mt="xl">
+                <Skeleton height={40} width={120} />
+                <Skeleton height={40} width={120} />
               </Group>
             </Stack>
-          </Paper>
-        )}
+          </Grid.Col>
+        </Grid>
+      </Container>
+    );
+  }
 
-        {/* Error State */}
-        {error && !loading && (
-          <Alert
-            icon={<IconAlertCircle size={18} />}
-            title="Error"
-            color="red"
-            variant="light"
+  if (error || !song) {
+    return (
+      <Container size="md" py="xl">
+        <Alert icon={<IconAlertCircle size={18} />} title="Error" color="red" variant="light">
+          <Text size="sm" mb="xs">{error || 'Song not found'}</Text>
+          <Button size="xs" variant="outline" onClick={fetchSongDetails}>Try again</Button>
+        </Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Box pb={120} style={{ overflowX: 'hidden' }}>
+      {/* Immersive Background Header */}
+      <Box
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: 250,
+          overflow: 'hidden',
+          marginBottom: -140, // Pull content up significantly
+        }}
+      >
+        {/* Blurred Background Image */}
+        <Box
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url(${song.albumArt || '/placeholder-art.png'})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(40px) brightness(0.5)',
+            zIndex: 0,
+          }}
+        />
+        {/* Gradient Overlay */}
+        <Box
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%)',
+            zIndex: 1,
+          }}
+        />
+
+        <Container size="lg" style={{ position: 'relative', zIndex: 2, height: '100%', paddingTop: 20 }}>
+          <Button
+            variant="subtle"
+            color="gray"
+            leftSection={<IconArrowLeft size={18} />}
+            onClick={() => router.back()}
+            style={{ color: 'white' }}
           >
-            <Text size="sm" mb="xs">
-              {error}
-            </Text>
-            <Button size="xs" variant="outline" onClick={fetchSongDetails}>
-              Try again
-            </Button>
-          </Alert>
-        )}
+            Back
+          </Button>
+        </Container>
+      </Box>
 
-        {/* Song Details */}
-        {!loading && !error && song && (
-          <Paper shadow="sm" p="xl" radius="md" withBorder>
-            {/* Desktop Layout */}
-            <Box visibleFrom="md">
-              <Group align="flex-start" gap="xl" wrap="nowrap">
-                {/* Album Art */}
-                <Box style={{ flexShrink: 0 }}>
-                  {song.albumArt ? (
-                    <Image
-                      src={song.albumArt}
-                      alt={`${song.title} album art`}
-                      width={250}
-                      height={250}
-                      radius="md"
-                      fit="cover"
-                    />
-                  ) : (
-                    <Box
-                      style={{
-                        width: 250,
-                        height: 250,
-                        backgroundColor: 'var(--mantine-color-gray-1)',
-                        borderRadius: 'var(--mantine-radius-md)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <IconMusic size={80} stroke={1.5} color="var(--mantine-color-gray-5)" />
-                    </Box>
-                  )}
+      <Container size="lg" style={{ position: 'relative', zIndex: 3 }}>
+        <Grid gutter="xl">
+          {/* Left Column: Album Art */}
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Box
+              w={{ base: 220, xs: 280, md: '100%' }}
+              mx="auto"
+              style={{
+                borderRadius: theme.radius.lg,
+                overflow: 'hidden',
+                boxShadow: theme.shadows.xl,
+                aspectRatio: '1/1',
+                position: 'relative',
+                backgroundColor: theme.colors.dark[8],
+              }}
+            >
+              {song.albumArt ? (
+                <Image
+                  src={song.albumArt}
+                  alt={song.title}
+                  w="100%"
+                  h="100%"
+                  fit="cover"
+                />
+              ) : (
+                <Box
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.colors.gray[1],
+                  }}
+                >
+                  <IconMusic size={80} color={theme.colors.gray[5]} />
                 </Box>
-
-                {/* Song Info */}
-                <Stack gap="md" style={{ flex: 1 }}>
-                  <Box>
-                    <Title order={1} mb="xs">
-                      {song.title}
-                    </Title>
-                    <Text size="xl" c="dimmed" fw={500}>
-                      {song.artist}
-                    </Text>
-                  </Box>
-
-                  <Stack gap="xs">
-                    {song.album && (
-                      <Group gap="xs">
-                        <Text fw={600} size="sm">
-                          Album:
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          {song.album}
-                        </Text>
-                      </Group>
-                    )}
-                    {song.duration && (
-                      <Group gap="xs">
-                        <Text fw={600} size="sm">
-                          Duration:
-                        </Text>
-                        <Text size="sm" c="dimmed">
-                          {formatDuration(song.duration)}
-                        </Text>
-                      </Group>
-                    )}
-                    <Group gap="xs">
-                      <Text fw={600} size="sm">
-                        Added:
-                      </Text>
-                      <Text size="sm" c="dimmed">
-                        {formatDate(song.createdAt)}
-                      </Text>
-                    </Group>
-                  </Stack>
-
-                  <Group gap="sm" mt="md">
-                    <Button
-                      leftSection={<IconPlayerPlay size={18} />}
-                      onClick={handlePlaySong}
-                      variant={isCurrentlyPlaying ? 'filled' : 'light'}
-                    >
-                      {isCurrentlyPlaying ? 'Playing' : 'Play'}
-                    </Button>
-
-                    <Button
-                      leftSection={<IconList size={18} />}
-                      onClick={() => {
-                        if (song) {
-                          addToQueue(song);
-                        }
-                      }}
-                      variant="light"
-                    >
-                      Add to Queue
-                    </Button>
-
-                    <Menu position="bottom" shadow="md">
-                      <Menu.Target>
-                        <Button
-                          leftSection={<IconPlaylistAdd size={18} />}
-                          variant="outline"
-                        >
-                          Add to Playlist
-                        </Button>
-                      </Menu.Target>
-                      <AddToPlaylistMenu songId={song.id} />
-                    </Menu>
-
-                    {songActions?.isOwner && (
-                      <>
-                        <Button
-                          variant="light"
-                          color="blue"
-                          leftSection={<IconEdit size={18} />}
-                          onClick={songActions.handleEdit}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="light"
-                          color="red"
-                          leftSection={<IconTrash size={18} />}
-                          onClick={songActions.handleDelete}
-                        >
-                          Delete
-                        </Button>
-                      </>
-                    )}
-                  </Group>
-                </Stack>
-              </Group>
+              )}
             </Box>
+          </Grid.Col>
 
-            {songActions && (
-              <EditSongModal
-                opened={songActions.editModalOpen}
-                onClose={songActions.closeEditModal}
-                song={song}
-                onSuccess={fetchSongDetails}
-              />
-            )}
-
-            {/* Mobile Layout */}
-            <Stack gap="xl" hiddenFrom="md">
-              {/* Album Art */}
-              <Box>
-                {song.albumArt ? (
-                  <Image
-                    src={song.albumArt}
-                    alt={`${song.title} album art`}
-                    width="100%"
-                    height="auto"
-                    radius="md"
-                    fit="cover"
-                    style={{ maxWidth: 400, margin: '0 auto' }}
-                  />
-                ) : (
-                  <Box
+          {/* Right Column: Info & Actions */}
+          <Grid.Col span={{ base: 12, md: 8 }} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: theme.spacing.xl }}>
+            <Stack gap="md">
+              <Group align="flex-start" justify="space-between" wrap="nowrap">
+                <Box>
+                  <Title
+                    order={1}
                     style={{
-                      width: '100%',
-                      maxWidth: 400,
-                      aspectRatio: '1',
-                      margin: '0 auto',
-                      backgroundColor: 'var(--mantine-color-gray-1)',
-                      borderRadius: 'var(--mantine-radius-md)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      fontSize: '3rem',
+                      lineHeight: 1.1,
+                      textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                      color: 'white' // Force white text on dark background
                     }}
                   >
-                    <IconMusic size={80} stroke={1.5} color="var(--mantine-color-gray-5)" />
-                  </Box>
-                )}
-              </Box>
-
-              {/* Song Info */}
-              <Stack gap="md">
-                <Box>
-                  <Title order={2} mb="xs">
                     {song.title}
                   </Title>
-                  <Text size="lg" c="dimmed" fw={500}>
+                  <Text size="xl" fw={500} style={{ color: 'rgba(255,255,255,0.8)' }} mt="xs">
                     {song.artist}
                   </Text>
                 </Box>
+                <Box mt="xs">
+                  <FavoriteButton songId={song.id} size="lg" />
+                </Box>
+              </Group>
 
-                <Stack gap="xs">
-                  {song.album && (
-                    <Group gap="xs">
-                      <Text fw={600} size="sm">
-                        Album:
-                      </Text>
-                      <Text size="sm" c="dimmed">
-                        {song.album}
-                      </Text>
-                    </Group>
-                  )}
-                  <Group gap="xs">
-                    <Text fw={600} size="sm">
-                      Duration:
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {formatDuration(song.duration)}
-                    </Text>
-                  </Group>
-                  <Group gap="xs">
-                    <Text fw={600} size="sm">
-                      Added:
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {formatDate(song.createdAt)}
-                    </Text>
-                  </Group>
-                </Stack>
-
-                <Stack gap="sm" mt="md">
-                  <Button
-                    leftSection={<IconPlayerPlay size={18} />}
-                    onClick={handlePlaySong}
-                    variant={isCurrentlyPlaying ? 'filled' : 'light'}
-                    size="md"
-                    fullWidth
+              {/* Metadata Badges */}
+              <Group gap="sm" mt="sm">
+                {song.album && (
+                  <Badge
+                    size="lg"
+                    variant="filled"
+                    color="dark"
+                    leftSection={<IconDisc size={14} />}
+                    style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}
                   >
-                    {isCurrentlyPlaying ? 'Playing' : 'Play'}
-                  </Button>
-
-                  <Button
-                    leftSection={<IconList size={18} />}
-                    onClick={() => {
-                      if (song) {
-                        addToQueue(song);
-                      }
-                    }}
-                    variant="light"
-                    size="md"
-                    fullWidth
+                    {song.album}
+                  </Badge>
+                )}
+                {song.duration && (
+                  <Badge
+                    size="lg"
+                    variant="filled"
+                    color="dark"
+                    leftSection={<IconClock size={14} />}
+                    style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}
                   >
-                    Add to Queue
-                  </Button>
+                    {formatDuration(song.duration)}
+                  </Badge>
+                )}
+                <Badge
+                  size="lg"
+                  variant="filled"
+                  color="dark"
+                  leftSection={<IconCalendar size={14} />}
+                  style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}
+                >
+                  {formatDate(song.createdAt)}
+                </Badge>
+              </Group>
 
+              {/* Action Buttons */}
+              <Group gap="md" mt="xl">
+                <Button
+                  size="lg"
+                  radius="xl"
+                  color="primary"
+                  leftSection={<IconPlayerPlay size={24} />}
+                  onClick={handlePlaySong}
+                  variant={isCurrentlyPlaying ? 'filled' : 'gradient'}
+                  gradient={{ from: 'primary', to: 'accent2', deg: 45 }}
+                  style={{ boxShadow: theme.shadows.md }}
+                >
+                  {isCurrentlyPlaying ? 'Playing' : 'Play Now'}
+                </Button>
+
+                <Button
+                  size="lg"
+                  radius="xl"
+                  variant="default"
+                  leftSection={<IconList size={20} />}
+                  onClick={() => addToQueue(song)}
+                  style={{ border: 'none', background: 'rgba(255,255,255,0.1)', color: 'white', backdropFilter: 'blur(10px)' }}
+                >
+                  Add to Queue
+                </Button>
+
+                <Menu position="bottom" shadow="md">
+                  <Menu.Target>
+                    <ActionIcon
+                      size={50}
+                      radius="xl"
+                      variant="default"
+                      style={{ border: 'none', background: 'rgba(255,255,255,0.1)', color: 'white', backdropFilter: 'blur(10px)' }}
+                    >
+                      <IconPlaylistAdd size={24} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <AddToPlaylistMenu songId={song.id} />
+                </Menu>
+
+                {songActions.isOwner && (
                   <Menu position="bottom" shadow="md">
                     <Menu.Target>
-                      <Button
-                        leftSection={<IconPlaylistAdd size={18} />}
-                        variant="outline"
-                        size="md"
-                        fullWidth
+                      <ActionIcon
+                        size={50}
+                        radius="xl"
+                        variant="default"
+                        style={{ border: 'none', background: 'rgba(255,255,255,0.1)', color: 'white', backdropFilter: 'blur(10px)' }}
                       >
-                        Add to Playlist
-                      </Button>
+                        <IconEdit size={24} />
+                      </ActionIcon>
                     </Menu.Target>
-                    <AddToPlaylistMenu songId={song.id} />
+                    <Menu.Dropdown>
+                      <Menu.Item leftSection={<IconEdit size={16} />} onClick={songActions.handleEdit}>
+                        Edit Metadata
+                      </Menu.Item>
+                      <Menu.Item color="red" leftSection={<IconTrash size={16} />} onClick={songActions.handleDelete}>
+                        Delete Song
+                      </Menu.Item>
+                    </Menu.Dropdown>
                   </Menu>
-
-                  {songActions?.isOwner && (
-                    <Group grow>
-                      <Button
-                        variant="light"
-                        color="blue"
-                        leftSection={<IconEdit size={18} />}
-                        onClick={songActions.handleEdit}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="light"
-                        color="red"
-                        leftSection={<IconTrash size={18} />}
-                        onClick={songActions.handleDelete}
-                      >
-                        Delete
-                      </Button>
-                    </Group>
-                  )}
-                </Stack>
-              </Stack>
+                )}
+              </Group>
             </Stack>
-          </Paper >
-        )
-        }
-      </Container >
-    </Box >
+          </Grid.Col>
+        </Grid>
+
+        {/* Lyrics Section */}
+        <Paper shadow="sm" radius="lg" p="xl" mt={50} withBorder>
+          <Group mb="lg">
+            <IconMicrophone size={24} color={theme.colors.primary[6]} />
+            <Title order={3}>Lyrics</Title>
+          </Group>
+
+          {song.lyrics ? (
+            <Text
+              size="lg"
+              style={{
+                whiteSpace: 'pre-wrap',
+                lineHeight: 1.8,
+                fontFamily: 'monospace',
+                color: theme.colors.dark[3]
+              }}
+            >
+              {song.lyrics}
+            </Text>
+          ) : (
+            <Stack align="center" py="xl" gap="md">
+              <Text c="dimmed" size="lg">No lyrics available for this song</Text>
+              {songActions.isOwner && (
+                <Button
+                  variant="light"
+                  leftSection={<IconEdit size={16} />}
+                  onClick={songActions.handleEdit}
+                >
+                  Add Lyrics
+                </Button>
+              )}
+            </Stack>
+          )}
+        </Paper>
+      </Container>
+
+      {/* Edit Modal */}
+      <EditSongModal
+        opened={songActions.editModalOpen}
+        onClose={songActions.closeEditModal}
+        song={song}
+        onSuccess={fetchSongDetails}
+      />
+    </Box>
   );
 }
 

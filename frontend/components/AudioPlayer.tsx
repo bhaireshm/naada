@@ -16,7 +16,10 @@ import {
   Stack,
   Tooltip,
   ScrollArea,
+  Drawer,
   Button,
+  Portal,
+  Menu,
 } from '@mantine/core';
 import {
   IconPlayerPlay,
@@ -31,6 +34,13 @@ import {
   IconMicrophone,
   IconEdit,
   IconX,
+  IconChevronDown,
+  IconTrash,
+  IconDots,
+  IconPlaylistAdd,
+  IconInfoCircle,
+  IconDownload,
+  IconCheck,
 } from '@tabler/icons-react';
 import FavoriteButton from '@/components/FavoriteButton';
 import { ShortcutTooltip } from '@/components/ShortcutTooltip';
@@ -41,6 +51,11 @@ import PlaybackSpeedControl from '@/components/PlaybackSpeedControl';
 import ArtistName from '@/components/ArtistName';
 import EditSongModal from '@/components/EditSongModal';
 import QueueOverlay from '@/components/QueueOverlay';
+import AddToPlaylistMenu from '@/components/AddToPlaylistMenu';
+import { downloadManager } from '@/lib/offline/downloadManager';
+import { notifications } from '@mantine/notifications';
+import { getSongStreamUrl } from '@/lib/api';
+import { formatArtists } from '@/lib/artistUtils';
 
 interface AudioPlayerProps {
   song: Song | null;
@@ -71,6 +86,7 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
     previous,
     jumpToQueueIndex,
     removeFromQueue,
+    reorderQueue,
   } = useAudioPlayerContext();
 
   // Enhanced colors for better visibility
@@ -85,9 +101,87 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
   const [isHovering, setIsHovering] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [hoverTime, setHoverTime] = useState<number | null>(null);
   const [hoverLeft, setHoverLeft] = useState<number>(0);
+
+  useEffect(() => {
+    if (!currentSong) return;
+    const checkOfflineStatus = async () => {
+      const offline = await downloadManager.isSongOffline(currentSong.id);
+      setIsOffline(offline);
+    };
+    checkOfflineStatus();
+  }, [currentSong?.id]);
+
+  const handleDownload = async () => {
+    if (!currentSong) return;
+
+    if (isOffline) {
+      // Remove from offline storage
+      try {
+        await downloadManager.removeSong(currentSong.id);
+        setIsOffline(false);
+        notifications.show({
+          title: 'Removed from Offline',
+          message: `${currentSong.title} removed from offline storage`,
+          color: 'blue',
+        });
+      } catch (err) {
+        notifications.show({
+          title: 'Error',
+          message: 'Failed to remove song from offline storage',
+          color: 'red',
+        });
+      }
+      return;
+    }
+
+    // Download song for offline
+    try {
+      const songUrl = getSongStreamUrl(currentSong.id);
+      const artist = Array.isArray(currentSong.artist) ? formatArtists(currentSong.artist) : currentSong.artist;
+
+      await downloadManager.queueDownload(
+        currentSong.id,
+        currentSong.title,
+        artist,
+        songUrl,
+        1,
+        (progress) => {
+          if (progress.status === 'completed') {
+            setIsOffline(true);
+            notifications.show({
+              title: 'Download Complete',
+              message: `${currentSong.title} is now available offline`,
+              color: 'green',
+            });
+          } else if (progress.status === 'failed') {
+            notifications.show({
+              title: 'Download Failed',
+              message: progress.error || 'Failed to download song',
+              color: 'red',
+            });
+          }
+        }
+      );
+
+      notifications.show({
+        title: 'Download Started',
+        message: `Downloading ${currentSong.title}...`,
+        color: 'blue',
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to start download',
+        color: 'red',
+      });
+    }
+  };
 
 
   // Use song actions hook for current song (always call to avoid hook order issues)
@@ -192,57 +286,65 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
   return (
     <>
       {/* Queue Overlay */}
-      <QueueOverlay
-        isOpen={showQueue}
-        queue={queue}
-        currentIndex={currentIndex}
-        onPlay={(index) => {
-          jumpToQueueIndex(index);
-        }}
-        onClose={() => setShowQueue(false)}
-      />
+      {/* Queue Overlay */}
+      <Portal>
+        <QueueOverlay
+          isOpen={showQueue}
+          queue={queue}
+          currentIndex={currentIndex}
+          onPlay={(index) => {
+            jumpToQueueIndex(index);
+          }}
+          onClose={() => setShowQueue(false)}
+          zIndex={10000}
+          onReorder={reorderQueue}
+        />
+      </Portal>
 
       {/* Lyrics Overlay */}
+      {/* Lyrics Overlay */}
       {showLyrics && (
-        <Box
-          style={{
-            position: 'fixed',
-            bottom: 80,
-            right: 20,
-            width: 350,
-            maxWidth: '100vw',
-            height: 'calc(100vh - 180px)', // Leave space for header/footer
-            background: theme?.colors?.dark?.[7] || '#333',
-            borderRadius: theme?.radius?.md || 8,
-            boxShadow: theme?.shadows?.xl || 'none',
-            zIndex: 99,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            border: `1px solid ${theme?.colors?.dark?.[4] || '#555'}`,
-          }}
-        >
-          <Group justify="space-between" p="md" style={{ borderBottom: `1px solid ${theme?.colors?.dark?.[6] || '#444'}` }}>
-            <Text fw={700} size="lg">Lyrics</Text>
-            <ActionIcon variant="subtle" color="gray" onClick={() => setShowLyrics(false)}>
-              <IconX size={20} />
-            </ActionIcon>
-          </Group>
-          <ScrollArea style={{ flex: 1 }} p="md">
-            {currentSong.lyrics ? (
-              <Text style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
-                {currentSong.lyrics}
-              </Text>
-            ) : (
-              <Stack align="center" justify="center" h={200} gap="xs">
-                <Text c="dimmed">No lyrics available</Text>
-                <Button variant="light" size="xs" leftSection={<IconEdit size={14} />} onClick={songActions.handleEdit}>
-                  Add Lyrics
-                </Button>
-              </Stack>
-            )}
-          </ScrollArea>
-        </Box>
+        <Portal>
+          <Box
+            style={{
+              position: 'fixed',
+              bottom: 80,
+              right: 20,
+              width: 350,
+              maxWidth: '100vw',
+              height: 'calc(100vh - 180px)', // Leave space for header/footer
+              background: theme?.colors?.dark?.[7] || '#333',
+              borderRadius: theme?.radius?.md || 8,
+              boxShadow: theme?.shadows?.xl || 'none',
+              zIndex: 10000,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              border: `1px solid ${theme?.colors?.dark?.[4] || '#555'}`,
+            }}
+          >
+            <Group justify="space-between" p="md" style={{ borderBottom: `1px solid ${theme?.colors?.dark?.[6] || '#444'}` }}>
+              <Text fw={700} size="lg">Lyrics</Text>
+              <ActionIcon variant="subtle" color="gray" onClick={() => setShowLyrics(false)}>
+                <IconX size={20} />
+              </ActionIcon>
+            </Group>
+            <ScrollArea style={{ flex: 1 }} p="md">
+              {currentSong.lyrics ? (
+                <Text style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
+                  {currentSong.lyrics}
+                </Text>
+              ) : (
+                <Stack align="center" justify="center" h={200} gap="xs">
+                  <Text c="dimmed">No lyrics available</Text>
+                  <Button variant="light" size="xs" leftSection={<IconEdit size={14} />} onClick={songActions.handleEdit}>
+                    Add Lyrics
+                  </Button>
+                </Stack>
+              )}
+            </ScrollArea>
+          </Box>
+        </Portal>
       )}
 
       {currentSong && (
@@ -549,9 +651,17 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             }}
           />
 
-          <Group justify="space-between" align="center" wrap="nowrap" gap="xs" px="xs">
+          <Group
+            justify="space-between"
+            align="center"
+            wrap="nowrap"
+            gap="xs"
+            px="xs"
+            onClick={() => setIsExpanded(true)}
+            style={{ cursor: 'pointer' }}
+          >
             {/* Album Art and Song Info */}
-            <Group gap="xs" style={{ minWidth: 0, flex: 1 }} onClick={() => router.push(`/songs/${currentSong.id}`)}>
+            <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
               <Image
                 src={currentSong.albumArt || null}
                 alt={currentSong.title}
@@ -574,25 +684,20 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             </Group>
 
             {/* Favorite Button */}
-            <FavoriteButton songId={currentSong.id} size="md" />
-
-            {/* Lyrics Button Mobile */}
-            <ActionIcon
-              variant={showLyrics ? "filled" : "subtle"}
-              color={showLyrics ? "primary" : "dark"}
-              onClick={() => setShowLyrics(!showLyrics)}
-              size="lg"
-            >
-              <IconMicrophone size={22} />
-            </ActionIcon>
+            <div onClick={(e) => e.stopPropagation()}>
+              <FavoriteButton songId={currentSong.id} size="md" />
+            </div>
 
             {/* Play/Pause Button */}
             <ActionIcon
-              variant={showLyrics ? "filled" : "subtle"}
+              variant="filled"
               color="dark"
               size="lg"
               radius="xl"
-              onClick={togglePlayPause}
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlayPause();
+              }}
               disabled={loading}
               loading={loading}
             >
@@ -604,6 +709,215 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
             </ActionIcon>
           </Group>
         </Box>
+
+        {/* Expanded Mobile Player Drawer */}
+        <Drawer
+          opened={isExpanded}
+          onClose={() => setIsExpanded(false)}
+          position="bottom"
+          size="100%"
+          withCloseButton={false}
+          transitionProps={{ transition: 'slide-up', duration: 250 }}
+          styles={{
+            body: {
+              height: '100%',
+              padding: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              background: theme.colors.gray[0], // Light background
+            }
+          }}
+          zIndex={1000}
+        >
+          {/* Header */}
+          <Group justify="space-between" p="md" pt="xl">
+            <ActionIcon variant="subtle" color="dark" onClick={() => setIsExpanded(false)}>
+              <IconChevronDown size={24} />
+            </ActionIcon>
+            <Text fw={600} size="sm" tt="uppercase" c="dimmed">Now Playing</Text>
+            <Menu position="bottom-end" shadow="md" width={200} zIndex={2002}>
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="dark">
+                  <IconDots size={24} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconInfoCircle size={16} />}
+                  onClick={() => {
+                    setIsExpanded(false);
+                    router.push(`/songs/${currentSong.id}`);
+                  }}
+                >
+                  Details
+                </Menu.Item>
+                <Menu
+                  trigger="click"
+                  position="left-start"
+                  offset={2}
+                  withArrow
+                  zIndex={2003}
+                >
+                  <Menu.Target>
+                    <Menu.Item leftSection={<IconPlaylistAdd size={16} />}>
+                      Add to Playlist
+                    </Menu.Item>
+                  </Menu.Target>
+                  <AddToPlaylistMenu songId={currentSong.id} />
+                </Menu>
+                <Menu.Item
+                  leftSection={isOffline ? <IconCheck size={16} /> : <IconDownload size={16} />}
+                  onClick={handleDownload}
+                  color={isOffline ? 'green' : undefined}
+                >
+                  {isOffline ? 'Remove from Offline' : 'Download for Offline'}
+                </Menu.Item>
+                {songActions.canDelete && (
+                  <Menu.Item
+                    leftSection={<IconTrash size={16} />}
+                    color="red"
+                    onClick={() => {
+                      setIsExpanded(false);
+                      songActions.handleDelete();
+                    }}
+                  >
+                    Delete Song
+                  </Menu.Item>
+                )}
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+
+          {/* Main Content */}
+          <Stack
+            flex={1}
+            justify="center"
+            align="center"
+            gap="xl"
+            px="xl"
+            pb="xl"
+            style={{ overflowY: 'auto' }}
+          >
+            {/* Large Album Art */}
+            <Box
+              style={{
+                borderRadius: theme.radius.md,
+                overflow: 'hidden',
+                boxShadow: theme.shadows.xl,
+                width: '100%',
+                maxWidth: 320,
+                aspectRatio: '1/1',
+              }}
+            >
+              <Image
+                src={currentSong.albumArt || null}
+                alt={currentSong.title}
+                w="100%"
+                h="100%"
+                fit="cover"
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23e0e0e0'/%3E%3Cpath d='M120 100v100l80-50z' fill='%23999'/%3E%3C/svg%3E"
+              />
+            </Box>
+
+            {/* Song Info */}
+            <Stack gap={4} align="center" w="100%">
+              <Group justify="space-between" w="100%" align="flex-start" wrap="nowrap">
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Text size="xl" fw={700} truncate c="dark" style={{ fontSize: '24px', lineHeight: 1.2 }}>
+                    {currentSong.title}
+                  </Text>
+                  <ArtistName
+                    artist={currentSong.artist}
+                    size="md"
+                    truncate
+                    c="dimmed"
+                    style={{ fontSize: '18px' }}
+                  />
+                </Box>
+                <FavoriteButton songId={currentSong.id} size="lg" />
+              </Group>
+            </Stack>
+
+            {/* Progress Bar */}
+            <Stack gap={8} w="100%">
+              <Slider
+                value={currentTime}
+                onChange={seek}
+                max={duration || 1}
+                min={0}
+                disabled={loading || !duration}
+                size="md"
+                color="dark"
+                thumbSize={16}
+                styles={{
+                  thumb: { borderWidth: 0, boxShadow: theme.shadows.sm },
+                  track: { backgroundColor: theme.colors.gray[3] },
+                }}
+              />
+              <Group justify="space-between">
+                <Text size="xs" c="dimmed">{formatTime(currentTime)}</Text>
+                <Text size="xs" c="dimmed">{formatTime(duration)}</Text>
+              </Group>
+            </Stack>
+
+            {/* Main Controls */}
+            <Group justify="space-between" w="100%" px="md">
+              <ShuffleButton size={24} />
+
+              <ActionIcon
+                variant="transparent"
+                color="dark"
+                size="xl"
+                onClick={previous}
+                disabled={!hasPrevious}
+              >
+                <IconPlayerSkipBack size={32} fill="currentColor" />
+              </ActionIcon>
+
+              <ActionIcon
+                variant="filled"
+                color="dark"
+                size={72}
+                radius="xl"
+                onClick={togglePlayPause}
+                disabled={loading}
+                loading={loading}
+                style={{ boxShadow: theme.shadows.md }}
+              >
+                {isPlaying ? (
+                  <IconPlayerPause size={32} fill="currentColor" />
+                ) : (
+                  <IconPlayerPlay size={32} fill="currentColor" style={{ marginLeft: 4 }} />
+                )}
+              </ActionIcon>
+
+              <ActionIcon
+                variant="transparent"
+                color="dark"
+                size="xl"
+                onClick={next}
+                disabled={!hasNext}
+              >
+                <IconPlayerSkipForward size={32} fill="currentColor" />
+              </ActionIcon>
+
+              <RepeatButton size={24} />
+            </Group>
+
+            {/* Footer Actions */}
+            <Group justify="space-between" w="100%" px="lg" mt="md">
+              <ActionIcon variant="subtle" color="dark" onClick={() => setShowLyrics(!showLyrics)}>
+                <IconMicrophone size={24} />
+              </ActionIcon>
+
+              <ActionIcon variant="subtle" color="dark" onClick={() => setShowQueue(!showQueue)}>
+                <IconList size={24} />
+              </ActionIcon>
+
+
+            </Group>
+          </Stack>
+        </Drawer>
       </Box>
     </>
   );

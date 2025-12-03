@@ -41,6 +41,7 @@ interface AudioPlayerActions {
   jumpToQueueIndex: (index: number) => void;
   addToQueue: (song: Song) => void;
   setCrossfadeDuration: (duration: number) => void;
+  reorderQueue: (fromIndex: number, toIndex: number) => void;
 }
 
 export type UseAudioPlayerReturn = AudioPlayerState & AudioPlayerActions;
@@ -706,6 +707,37 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     } catch (error) { console.error(error); }
   }, []);
 
+  const reorderQueue = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex < 0 || fromIndex >= queue.length || toIndex < 0 || toIndex >= queue.length) return;
+
+    const newQueue = [...queue];
+    const [movedSong] = newQueue.splice(fromIndex, 1);
+    newQueue.splice(toIndex, 0, movedSong);
+
+    setQueue(newQueue);
+    setOriginalQueue(newQueue); // Assuming reorder affects original queue too for now
+
+    // Update currentIndex if needed
+    if (currentIndex === fromIndex) {
+      setCurrentIndex(toIndex);
+    } else if (currentIndex > fromIndex && currentIndex <= toIndex) {
+      setCurrentIndex(currentIndex - 1);
+    } else if (currentIndex < fromIndex && currentIndex >= toIndex) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  }, [queue, currentIndex]);
+
+  useEffect(() => {
+    handleEndedRef.current = () => {
+      if (repeatMode === 'one') {
+        seek(0);
+        play();
+      } else {
+        removeFromQueue(currentIndex);
+      }
+    };
+  }, [repeatMode, currentIndex, removeFromQueue, seek, play]);
+
   // Persist state changes
   useEffect(() => {
     if (!isInitializedRef.current) return;
@@ -760,5 +792,6 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     jumpToQueueIndex,
     addToQueue,
     setCrossfadeDuration,
+    reorderQueue,
   };
 }

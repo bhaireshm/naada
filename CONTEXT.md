@@ -185,6 +185,37 @@ curl -X POST http://localhost:3001/songs/batch-cleanup \
    - Complementary to text-based metadata cleaning
    - **Status:** Successfully cleaned 231 songs (65 updated) in live environment
 
+5. **Mobile UI Enhancements:**
+   - **Expanded Audio Player:** Clickable footer opens full-screen Drawer
+   - **Rich Controls:** Large album art, progress slider, playback controls
+   - **Actions:** Integrated Delete, Lyrics, and Queue buttons in expanded view
+   - **Menu:** Added top-right menu with Details, Add to Playlist, and Download options
+   - **Menu:** Added top-right menu with Details, Add to Playlist, and Download options
+   - **Fixes:** Resolved z-index issues for Queue and Lyrics overlays
+   - **Design:** Premium look with gradients and proper spacing
+
+6. **Song Details Page Redesign:**
+   - **Immersive Header:** Full-width blurred album art background
+   - **Hero Section:** Large album art, bold typography, prominent actions
+   - **Metadata:** Clean badges for album, duration, and date
+   - **Lyrics:** Dedicated section for lyrics display
+   - **Integration:** Added Favorite button and improved mobile responsiveness
+
+7. **Queue & Mobile UI Improvements:**
+   - **Queue Reordering:** Implemented drag-and-drop support for the song queue using `@hello-pangea/dnd`.
+   - **Overlay Fixes:** Wrapped Queue and Lyrics overlays in `Portal` with high z-index (10000) to ensure they appear above the mobile player drawer.
+   - **Visuals:** Added drag handles and visual feedback during reordering.
+
+8. **UI Refinements:**
+   - **Song Details:** Reduced top spacing and header height for a more compact look.
+   - **Mobile Player:** Moved "Delete Song" action to the top-right context menu for better organization.
+
+9. **Bug Fixes & Logic Updates:**
+   - **Queue Logic:** Implemented automatic removal of songs from the queue after playback (unless repeat mode is 'one').
+   - **Queue Reordering:** Fixed hydration issues with drag-and-drop by implementing a `StrictModeDroppable` component.
+   - **Song Details:** Further optimized header height and layout to reduce empty space.
+   - **Mobile Visuals:** Reduced album art size on mobile view for better layout balance.
+
 ### Previous Changes (Dec 2025):
 - **UI Refactor:**
   - Font Size: Significantly reduced global font sizes, line heights, and spacing for compact UI
