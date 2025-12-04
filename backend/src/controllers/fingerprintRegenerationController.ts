@@ -29,7 +29,7 @@ export async function regenerateFingerprints(
     res: Response
 ): Promise<void> {
     try {
-        const { songIds, processAll } = req.body;
+        const { songIds, processAll, limit = 10 } = req.body; // Process max 10 songs at a time by default
 
         if (!processAll && (!songIds || !Array.isArray(songIds))) {
             res.status(400).json({
@@ -38,22 +38,22 @@ export async function regenerateFingerprints(
             return;
         }
 
-        console.log(`Starting fingerprint regeneration (processAll: ${processAll})`);
+        console.log(`Starting fingerprint regeneration (processAll: ${processAll}, limit: ${limit})`);
 
         // Find songs with hash-based fingerprints (starts with "HASH:")
         let songs;
         if (processAll) {
             songs = await Song.find({
                 fingerprint: { $regex: /^HASH:/ }
-            });
+            }).limit(limit); // Limit to prevent memory issues
         } else {
             songs = await Song.find({
                 _id: { $in: songIds },
                 fingerprint: { $regex: /^HASH:/ }
-            });
+            }).limit(limit);
         }
 
-        console.log(`Found ${songs.length} songs with hash-based fingerprints`);
+        console.log(`Found ${songs.length} songs with hash-based fingerprints (limited to ${limit})`);
 
         const results: Array<{
             id: string;

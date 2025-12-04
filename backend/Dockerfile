@@ -11,6 +11,9 @@ RUN apt-get update && \
 # Verify fpcalc installation
 RUN which fpcalc && fpcalc -version
 
+# Set Node.js memory limit for Render's 512MB free tier
+ENV NODE_OPTIONS="--max-old-space-size=384"
+
 # Set working directory
 WORKDIR /app
 
