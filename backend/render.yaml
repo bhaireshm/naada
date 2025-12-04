@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: music-player-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: |
+      apt-get update
+      apt-get install -y libchromaprint-tools ffmpeg
+      which fpcalc || echo "fpcalc not found!"
+      fpcalc -version || echo "fpcalc version check failed"
+      npm install
+      npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Add your MongoDB, Firebase, R2 credentials as environment variables in Render dashboard
