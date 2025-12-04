@@ -34,6 +34,22 @@ app.use('/users', usersRouter);
 app.use('/artists', artistsRouter);
 app.use('/albums', albumsRouter);
 
+
+// Root endpoint for Render's health checks
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Naada Music Player API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      songs: '/songs',
+      playlists: '/playlists',
+      search: '/search'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
