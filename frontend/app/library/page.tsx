@@ -23,6 +23,7 @@ import {
   Skeleton,
   useMantineTheme,
   Badge,
+  Tooltip,
 } from '@mantine/core';
 import {
   IconPlayerPlay,
@@ -35,6 +36,7 @@ import {
   IconX,
   IconDownload,
   IconList,
+  IconArrowsShuffle,
 } from '@tabler/icons-react';
 import PlayingAnimation from '@/components/PlayingAnimation';
 import FavoriteButton from '@/components/FavoriteButton';
@@ -198,6 +200,15 @@ function LibraryPageContent() {
   };
 
   /**
+   * Handle shuffle play - shuffle all songs and play
+   */
+  const handleShufflePlay = () => {
+    if (filteredSongs.length === 0) return;
+    const shuffled = [...filteredSongs].sort(() => Math.random() - 0.5);
+    setQueue(shuffled, 0);
+  };
+
+  /**
    * Handle successful upload - refresh the song list
    */
   const handleUploadSuccess = () => {
@@ -337,6 +348,20 @@ function LibraryPageContent() {
               </Group>
             </Stack>
             <Group gap="xs">
+              {/* Shuffle Play Button - Always show when songs exist */}
+              {filteredSongs.length > 0 && (
+                <Tooltip label="Shuffle Play">
+                  <ActionIcon
+                    variant="light"
+                    color="accent1"
+                    size="lg"
+                    onClick={handleShufflePlay}
+                    aria-label="Shuffle play all songs"
+                  >
+                    <IconArrowsShuffle size={20} />
+                  </ActionIcon>
+                </Tooltip>
+              )}
               {albumFilter && filteredSongs.length > 0 && (
                 <Button
                   leftSection={<IconPlayerPlay size={18} />}

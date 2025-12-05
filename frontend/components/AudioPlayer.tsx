@@ -285,21 +285,20 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
 
   return (
     <>
-      {/* Queue Overlay */}
-      {/* Queue Overlay */}
-      <Portal>
-        <QueueOverlay
-          isOpen={showQueue}
-          queue={queue}
-          currentIndex={currentIndex}
-          onPlay={(index) => {
-            jumpToQueueIndex(index);
-          }}
-          onClose={() => setShowQueue(false)}
-          zIndex={10000}
-          onReorder={reorderQueue}
-        />
-      </Portal>
+      {/* Queue Sidebar */}
+      <QueueOverlay
+        isOpen={showQueue}
+        queue={queue}
+        currentIndex={currentIndex}
+        onPlay={(index) => {
+          jumpToQueueIndex(index);
+        }}
+        onClose={() => setShowQueue(false)}
+        zIndex={10000}
+        onReorder={reorderQueue}
+        onRemove={removeFromQueue}
+        isPlaying={isPlaying}
+      />
 
       {/* Lyrics Overlay */}
       {/* Lyrics Overlay */}
@@ -904,17 +903,36 @@ export default function AudioPlayer({ song, onSongChange }: AudioPlayerProps) {
               <RepeatButton size={24} />
             </Group>
 
-            {/* Footer Actions */}
-            <Group justify="space-between" w="100%" px="lg" mt="md">
-              <ActionIcon variant="subtle" color="dark" onClick={() => setShowLyrics(!showLyrics)}>
-                <IconMicrophone size={24} />
+            {/* Footer Actions - All in single row */}
+            <Group justify="center" w="100%" px="xs" mt="md" gap="md" wrap="nowrap">
+              <ActionIcon
+                variant={showLyrics ? "filled" : "subtle"}
+                color={showLyrics ? "primary" : "dark"}
+                size="md"
+                onClick={() => setShowLyrics(!showLyrics)}
+              >
+                <IconMicrophone size={18} />
               </ActionIcon>
 
-              <ActionIcon variant="subtle" color="dark" onClick={() => setShowQueue(!showQueue)}>
-                <IconList size={24} />
+              <ActionIcon
+                variant={showQueue ? "filled" : "subtle"}
+                color={showQueue ? "primary" : "dark"}
+                size="md"
+                onClick={() => setShowQueue(!showQueue)}
+              >
+                <IconList size={18} />
               </ActionIcon>
 
+              <ActionIcon
+                variant="subtle"
+                color="dark"
+                size="md"
+                onClick={toggleMute}
+              >
+                {renderVolumeIcon(18)}
+              </ActionIcon>
 
+              <PlaybackSpeedControl />
             </Group>
           </Stack>
         </Drawer>

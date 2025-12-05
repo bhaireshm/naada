@@ -11,7 +11,7 @@ export default function PlaybackSpeedControl() {
   const { playbackSpeed, setPlaybackSpeed } = useAudioPlayerContext();
 
   const speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
-  
+
   // Convert speed to slider value (0-100)
   const speedToSlider = (speed: number) => ((speed - 0.5) / 1.5) * 100;
   const sliderToSpeed = (value: number) => 0.5 + (value / 100) * 1.5;
@@ -26,20 +26,20 @@ export default function PlaybackSpeedControl() {
   return (
     <Menu shadow="md" width={200} position="top" offset={8} closeOnItemClick={false}>
       <Menu.Target>
-        <ShortcutTooltip 
-          shortcut={KEYBOARD_SHORTCUTS.speedUp} 
+        <ShortcutTooltip
+          shortcut={KEYBOARD_SHORTCUTS.speedUp}
           label={`Playback speed: ${playbackSpeed}x`}
         >
           <ActionIcon
             variant="light"
             color="accent1"
-            size={32}
+            size={28}
             radius="md"
             aria-label={`Playback speed: ${playbackSpeed}x`}
             styles={{
               root: {
                 border: `1px solid ${theme.colors.accent1[4]}`,
-                minWidth: 56,
+                minWidth: 48,
                 '&:hover': {
                   backgroundColor: theme.colors.accent1[1],
                   borderColor: theme.colors.accent1[5],
@@ -48,9 +48,9 @@ export default function PlaybackSpeedControl() {
               },
             }}
           >
-            <Group gap={4} wrap="nowrap">
-              <IconGauge size={16} stroke={2} />
-              <Text size="xs" fw={600} style={{ fontSize: '11px' }}>
+            <Group gap={2} wrap="nowrap">
+              <IconGauge size={14} stroke={2} />
+              <Text size="xs" fw={600} style={{ fontSize: '10px' }}>
                 {playbackSpeed}x
               </Text>
             </Group>

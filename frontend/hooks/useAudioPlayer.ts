@@ -595,10 +595,23 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
 
   const next = useCallback(() => {
     if (queue.length === 0) return;
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < queue.length) {
+
+    // Remove current song from queue when skipping
+    const newQueue = [...queue];
+    newQueue.splice(currentIndex, 1);
+
+    if (newQueue.length > 0) {
+      // The next song is now at the same index since we removed the current one
+      const nextIndex = Math.min(currentIndex, newQueue.length - 1);
+      setQueue(newQueue);
+      setOriginalQueue(prev => prev.filter((_, i) => i !== currentIndex));
       setCurrentIndex(nextIndex);
-      loadSong(queue[nextIndex]);
+      loadSong(newQueue[nextIndex]);
+    } else {
+      // Queue is empty after removing
+      setQueue([]);
+      setOriginalQueue([]);
+      setCurrentIndex(-1);
     }
   }, [queue, currentIndex, loadSong]);
 
