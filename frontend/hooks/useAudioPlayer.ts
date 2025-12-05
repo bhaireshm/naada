@@ -447,6 +447,7 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
         // Load source
         newMain.src = authenticatedUrl;
         newMain.volume = 0; // Start silent
+        newMain.currentTime = 0; // Always start from beginning
         newMain.load();
 
         // Reset time
@@ -479,6 +480,7 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
 
         // Load source
         audioRef.current.src = authenticatedUrl;
+        audioRef.current.currentTime = 0; // Always start from beginning
         audioRef.current.load();
         setCurrentTime(0);
       }
