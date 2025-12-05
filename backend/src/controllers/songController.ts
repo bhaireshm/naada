@@ -692,3 +692,76 @@ export async function deleteSong(
     });
   }
 }
+
+/**
+ * Delete all songs for the current user
+ * DELETE /songs/cleanup
+ * This is a dangerous operation - deletes all songs uploaded by the current user
+ */
+export async function deleteAllSongs(
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> {
+  try {
+    const userId = req.userId;
+
+    // Find all songs uploaded by this user
+    const songs = await Song.find({ uploadedBy: userId });
+
+    if (songs.length === 0) {
+      res.status(200).json({
+        message: 'No songs to delete',
+        deletedCount: 0,
+      });
+      return;
+    }
+
+    console.log(`Deleting ${songs.length} songs for user ${userId}...`);
+
+    let deletedFromR2 = 0;
+    let failedR2 = 0;
+
+    // Delete all files from R2 storage
+    for (const song of songs) {
+      try {
+        const deleteCommand = new DeleteObjectCommand({
+          Bucket: bucketName,
+          Key: song.fileKey,
+        });
+        await r2Client.send(deleteCommand);
+        deletedFromR2++;
+        console.log(`Deleted file from R2: ${song.fileKey} ${song.title}`);
+      } catch (storageError) {
+        console.error(`Failed to delete file from R2: ${song.fileKey} ${song.title}`, storageError);
+        failedR2++;
+        // Continue with other deletions
+      }
+    }
+
+    // Delete all songs from database
+    const result = await Song.deleteMany({ uploadedBy: userId });
+    console.log(`Deleted ${result.deletedCount} songs from database`);
+
+    res.status(200).json({
+      message: `Successfully deleted ${result.deletedCount} songs`,
+      deletedCount: result.deletedCount,
+      r2Stats: {
+        deleted: deletedFromR2,
+        failed: failedR2,
+      },
+    });
+  } catch (error) {
+    console.error('Delete all songs error:', error);
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    res.status(500).json({
+      error: {
+        code: 'CLEANUP_FAILED',
+        message: 'Failed to delete all songs',
+        details: errorMessage,
+      },
+    });
+  }
+}
+

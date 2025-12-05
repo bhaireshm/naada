@@ -1,8 +1,10 @@
 import { Router, type Router as RouterType } from 'express';
 import multer from 'multer';
+import { getAIMetadataStatus, processAIMetadata } from '../controllers/aiMetadataController';
+import { regenerateFingerprints } from '../controllers/fingerprintRegenerationController';
+import { aiEnhancedMetadataCleanup, batchMetadataCleanup, enrichSongMetadata } from '../controllers/metadataEnrichmentController';
+import { deleteAllSongs, deleteSong, getAllSongs, getSongMetadata, streamSong, updateSong, uploadSong } from '../controllers/songController';
 import { verifyToken } from '../middleware/auth';
-import { uploadSong, streamSong, getAllSongs, getSongMetadata, updateSong, deleteSong } from '../controllers/songController';
-import { processAIMetadata, getAIMetadataStatus } from '../controllers/aiMetadataController';
 
 const router: RouterType = Router();
 
@@ -44,11 +46,6 @@ router.post('/upload', verifyToken, upload.single('file'), uploadSong);
 // GET /songs/ai-metadata-status - Get AI metadata processing status
 router.get('/ai-metadata-status', verifyToken, getAIMetadataStatus);
 
-import { enrichSongMetadata, aiEnhancedMetadataCleanup, batchMetadataCleanup } from '../controllers/metadataEnrichmentController';
-import { regenerateFingerprints } from '../controllers/fingerprintRegenerationController';
-
-// ... existing imports ...
-
 // POST /songs/process-ai-metadata - Process existing songs to extract AI metadata
 router.post('/process-ai-metadata', verifyToken, processAIMetadata);
 
@@ -57,6 +54,9 @@ router.post('/batch-cleanup', verifyToken, batchMetadataCleanup);
 
 // POST /songs/regenerate-fingerprints - Regenerate acoustic fingerprints for hash-based songs
 router.post('/regenerate-fingerprints', verifyToken, regenerateFingerprints);
+
+// DELETE /songs/cleanup - Delete all songs for the current user (DANGEROUS - use with caution)
+router.delete('/cleanup', verifyToken, deleteAllSongs);
 
 // POST /songs/:id/enrich - Enrich song metadata from online sources
 router.post('/:id/enrich', verifyToken, enrichSongMetadata);
