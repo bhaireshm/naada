@@ -1,14 +1,17 @@
 # Project Context & Architecture
 
-> **IMPORTANT:** This file serves as the primary source of truth for the project's architecture, design decisions, and current state. 
+> **IMPORTANT:** This file serves as the primary source of truth for the project's architecture, design decisions, and current state.
 > **MAINTENANCE RULE:** Any agent or developer making significant changes to the codebase **MUST** update this file to reflect those changes.
 
 ## 1. Project Overview
+
 **Name:** Naada Music
 **Description:** A personal music library application allowing users to upload, organize, and stream their music collection. It features a responsive UI, metadata enrichment via MusicBrainz, and local/cloud playback.
 
 ## 2. Tech Stack
+
 ### Frontend
+
 - **Framework:** Next.js 14+ (App Router)
 - **Language:** TypeScript
 - **UI Library:** Mantine v7 (Core, Hooks, Notifications)
@@ -18,6 +21,7 @@
 - **Build Tool:** pnpm
 
 ### Backend
+
 - **Runtime:** Node.js
 - **Framework:** Express.js
 - **Database:** MongoDB (Mongoose)
@@ -27,8 +31,9 @@
 ## 3. Architecture & Key Patterns
 
 ### Frontend Layout
+
 - **RootLayout (`app/layout.tsx`):** Server component. Wraps the app in `ThemeProvider` and `ClientLayout`.
-- **ClientLayout (`components/ClientLayout.tsx`):** 
+- **ClientLayout (`components/ClientLayout.tsx`):**
   - Acts as the main provider wrapper (`AudioPlayerProvider`, `SearchProvider`, etc.).
   - Renders `MainLayout` which contains the Mantine `AppShell`.
   - **Crucial:** The `AppShell` manages the main layout.
@@ -38,21 +43,26 @@
     - **Main:** Content area with bottom padding to accommodate the footer.
 
 ### Audio Player Logic
+
 - **State:** Managed by `GlobalAudioPlayerContext` (provides `currentSong`).
 - **UI:** `AudioPlayer` component.
   - **Positioning:** Placed inside `AppShell.Footer`.
   - **Styling:** Fills the footer container (`width: 100%`, `height: 100%`). **Do NOT** use `position: fixed` on the player itself, as it breaks the AppShell layout flow.
 
 ### Backend Structure
+
 - **Controllers:** Handle HTTP requests and response formatting. Delegate business logic to Services.
 - **Services:** Contain business logic (e.g., `metadataEnrichmentService`, `songService`).
 - **Models:** Mongoose schemas for data persistence.
 
 ## 4. Design System & Theme
+
 The project uses a custom Mantine theme (`theme1`) with a "Warm Earthy" palette.
 
 ### Typography (Scaled Down)
+
 The entire UI uses a compact scale. **Do not increase these sizes arbitrarily.**
+
 - **Body:**
   - `xs`: 0.6rem (~9.6px)
   - `sm`: 0.7rem (~11.2px)
@@ -62,9 +72,11 @@ The entire UI uses a compact scale. **Do not increase these sizes arbitrarily.**
 - **Headings:** Scaled down similarly (h1 ~1.8rem).
 
 ### Spacing & Radius
+
 - Adjusted to match the compact typography (e.g., `xs` spacing is 0.2rem).
 
 ### Responsiveness
+
 - **Mobile First:** Design for small screens first.
 - **Header:** Uses responsive padding (`px={{ base: 'xs', sm: 'md' }}`) and gaps.
 - **Sidebar:** Hidden on mobile (Burger menu toggle), fixed on desktop.
@@ -72,9 +84,11 @@ The entire UI uses a compact scale. **Do not increase these sizes arbitrarily.**
 ## 5. Metadata Cleaning & AI Enhancement
 
 ### Metadata Cleaner (`backend/src/utils/metadataCleaner.ts`)
+
 The metadata cleaner provides comprehensive cleaning and normalization of song metadata from various sources (file tags, user input, downloaded files).
 
-#### Key Features:
+#### Key Features
+
 1. **Generic Website Pattern Removal**
    - Removes ANY website/download source in brackets using pattern matching
    - Catches domains with TLDs: `[AnySite.com]`, `[NewSite.xyz]`
@@ -112,7 +126,8 @@ The metadata cleaner provides comprehensive cleaning and normalization of song m
    - Classifies genres using audio analysis
    - Complements text-based cleaning
 
-#### Processing Order:
+#### Processing Order
+
 1. **Extract** metadata from file (includes AI analysis)
 2. **Detect & swap** title/artist if needed (NEW)
 3. **Clean** fields (remove URLs, junk, special chars)
@@ -120,10 +135,12 @@ The metadata cleaner provides comprehensive cleaning and normalization of song m
 5. **Normalize** all fields
 6. **Save** to database
 
-#### Testing & Verification:
+#### Testing & Verification
+
 To verify the metadata cleanup functionality, use `curl` to execute the API directly. This allows for testing both single songs and batch processing without frontend interaction.
 
 **Example Batch Cleanup Test:**
+
 ```bash
 curl -X POST http://localhost:3001/songs/batch-cleanup \
   -H "Content-Type: application/json" \
@@ -133,7 +150,8 @@ curl -X POST http://localhost:3001/songs/batch-cleanup \
 
 ### Delete Functionality
 
-#### Song Deletion Features:
+#### Song Deletion Features
+
 1. **Location 1: Song List** (`frontend/components/SongListItem.tsx`)
    - Three-dot menu → Delete option
    - Permission-based (only owner can delete)
@@ -151,7 +169,8 @@ curl -X POST http://localhost:3001/songs/batch-cleanup \
    - Deletes from database
    - Handles errors gracefully (continues with DB deletion if R2 fails)
 
-#### Reusable Hook:
+#### Reusable Hook
+
 - **`useSongActions`** (`frontend/hooks/useSongActions.ts`)
   - Provides consistent edit/delete handlers
   - Permission checking
@@ -161,6 +180,7 @@ curl -X POST http://localhost:3001/songs/batch-cleanup \
 ## 6. Recent Changes Log
 
 ### December 2024 - Metadata Cleaning & Delete Enhancements
+
 1. **Enhanced Metadata Cleaner:**
    - Added generic website pattern matching (no hardcoded list)
    - Added swapped title/artist detection using heuristics
@@ -217,7 +237,8 @@ curl -X POST http://localhost:3001/songs/batch-cleanup \
    - **Mobile Visuals:** Reduced album art size on mobile view for better layout balance.
    - **Access Control:** Restricted upload functionality to user ID 'bhairesh'.
 
-### Previous Changes (Dec 2025):
+### Previous Changes (Dec 2025)
+
 - **UI Refactor:**
   - Font Size: Significantly reduced global font sizes, line heights, and spacing for compact UI
   - Sidebar Overlap Fix: Moved AudioPlayer into AppShell.Footer
@@ -226,9 +247,10 @@ curl -X POST http://localhost:3001/songs/batch-cleanup \
   - Documentation: Consolidated into CONTEXT.md
 
 ## 7. Development Rules
-1.  **Principles:** Adhere to **DRY** (Don't Repeat Yourself), **KISS** (Keep It Simple, Stupid), and **SOLID** principles for all new code.
-2.  **Reuse:** **ALWAYS** check for existing implementations, components, or utilities before creating new files. Reuse existing code whenever possible to avoid duplication.
-3.  **Package Manager:** Always use `pnpm`.
-4.  **Linting:** Fix lint errors immediately.
-5.  **Build:** Always verify `pnpm build` (frontend & backend) before finishing a task.
-6.  **Documentation:** Update this CONTEXT.md file when making significant changes. Do not create random `.md` files in root or `.kiro` folder unless specifically needed for implementation notes.
+
+1. **Principles:** Adhere to **DRY** (Don't Repeat Yourself), **KISS** (Keep It Simple, Stupid), and **SOLID** principles for all new code.
+2. **Reuse:** **ALWAYS** check for existing implementations, components, or utilities before creating new files. Reuse existing code whenever possible to avoid duplication.
+3. **Package Manager:** Always use `pnpm`.
+4. **Linting:** Fix lint errors immediately.
+5. **Build:** Always verify `pnpm build` (frontend & backend) before finishing a task.
+6. **Documentation:** Update this CONTEXT.md file when making significant changes. Do not create random `.md` files in root or `.kiro` folder unless specifically needed for implementation notes.

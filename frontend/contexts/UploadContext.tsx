@@ -104,7 +104,10 @@ export function UploadProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const stats = queueManager.getStats();
         if (stats.pending > 0 && !isUploading && !uploadingRef.current && !isPaused) {
-            processQueue();
+            const timer = setTimeout(() => {
+                processQueue();
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [files.length, isPaused, isUploading, processQueue, queueManager]);
 

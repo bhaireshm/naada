@@ -7,8 +7,8 @@ interface GoogleSignInButtonProps {
   variant?: 'signup' | 'signin';
 }
 
-export function GoogleSignInButton({ 
-  onClick, 
+export function GoogleSignInButton({
+  onClick,
   loading = false,
   variant = 'signin'
 }: GoogleSignInButtonProps) {

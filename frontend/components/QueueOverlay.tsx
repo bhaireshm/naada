@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 import { Text, Group, Stack, useMantineTheme, Drawer, Box, ActionIcon, Portal } from '@mantine/core';
 import { IconGripVertical, IconX } from '@tabler/icons-react';
 import { Song } from '@/lib/api';

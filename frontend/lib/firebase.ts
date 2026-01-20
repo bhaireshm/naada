@@ -1,14 +1,14 @@
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import {
-  getAuth,
   Auth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  signInWithPopup,
   GoogleAuthProvider,
   User,
   UserCredential,
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
 } from 'firebase/auth';
 
 // Firebase configuration - use environment variables in production, fallback to JSON in development
@@ -44,39 +44,39 @@ if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
 
 // Initialize Firebase app (only once)
 let app: FirebaseApp;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
+if (getApps().length) {
   app = getApps()[0];
+} else {
+  app = initializeApp(firebaseConfig);
 }
 
 // Initialize Firebase Authentication
-export const auth: Auth = getAuth(app);
+export const firebaseAuth: Auth = getAuth(app);
 
 // Helper function to sign up a new user
-export const signUp = async (
+export const firebaseSignUp = async (
   email: string,
   password: string
 ): Promise<UserCredential> => {
-  return createUserWithEmailAndPassword(auth, email, password);
+  return createUserWithEmailAndPassword(firebaseAuth, email, password);
 };
 
 // Helper function to sign in an existing user
-export const signIn = async (
+export const firebaseSignIn = async (
   email: string,
   password: string
 ): Promise<UserCredential> => {
-  return signInWithEmailAndPassword(auth, email, password);
+  return signInWithEmailAndPassword(firebaseAuth, email, password);
 };
 
 // Helper function to sign out the current user
-export const signOut = async (): Promise<void> => {
-  return firebaseSignOut(auth);
+export const firebaseSignOut = async (): Promise<void> => {
+  return signOut(firebaseAuth);
 };
 
 // Helper function to get the current user's ID token
 export const getIdToken = async (): Promise<string | null> => {
-  const user: User | null = auth.currentUser;
+  const user: User | null = firebaseAuth.currentUser;
   if (user) {
     return user.getIdToken();
   }
@@ -85,16 +85,16 @@ export const getIdToken = async (): Promise<string | null> => {
 
 // Export the current user getter
 export const getCurrentUser = (): User | null => {
-  return auth.currentUser;
+  return firebaseAuth.currentUser;
 };
 
 // Google Sign-In provider
 const googleProvider = new GoogleAuthProvider();
 
 // Helper function to sign in/up with Google
-export const signInWithGoogle = async (): Promise<UserCredential> => {
+export const firebaseSignInWithGoogle = async (): Promise<UserCredential> => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    const result = await signInWithPopup(firebaseAuth, googleProvider);
     return result;
   } catch (error) {
     // Handle specific errors
@@ -111,13 +111,13 @@ export const signInWithGoogle = async (): Promise<UserCredential> => {
 };
 
 // Alias for consistency (Firebase handles both signup and signin the same way)
-export const signUpWithGoogle = signInWithGoogle;
+export const signUpWithGoogle = firebaseSignInWithGoogle;
 
 // Helper function to link Google account to current user (for account linking)
 export const linkGoogleAccountToCurrentUser = async (): Promise<UserCredential> => {
   try {
-    const currentUser = auth.currentUser;
-    
+    const currentUser = firebaseAuth.currentUser;
+
     if (!currentUser) {
       throw new Error('No user is currently signed in');
     }

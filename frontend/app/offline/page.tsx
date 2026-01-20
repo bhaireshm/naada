@@ -219,7 +219,7 @@ export default function OfflinePage() {
         <Alert icon={<IconAlertCircle size={16} />} title="About Offline Storage" color="blue">
           <Text size="sm">
             Downloaded songs are stored on your device and can be played without an internet connection.
-            Your offline data will sync automatically when you're back online.
+            Your offline data will sync automatically when you&apos;re back online.
           </Text>
         </Alert>
       </Stack>

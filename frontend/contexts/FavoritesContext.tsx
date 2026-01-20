@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 interface FavoritesContextValue {
   favorites: Set<string>;
@@ -12,7 +12,7 @@ interface FavoritesContextValue {
 
 const FavoritesContext = createContext<FavoritesContextValue | undefined>(undefined);
 
-export function FavoritesProvider({ children }: { children: ReactNode }) {
+export function FavoritesProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,32 +21,34 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     // Only fetch if user might be authenticated (check for Firebase auth state)
     const checkAuthAndFetch = async () => {
       try {
-        const { getIdToken, auth } = await import('@/lib/firebase');
-        
+        const { getIdToken, firebaseAuth } = await import('@/lib/firebase');
+
         // Wait for auth state to be determined
-        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+        const unsubscribe = firebaseAuth.onAuthStateChanged(async (user) => {
           if (user) {
             try {
               const token = await getIdToken();
               if (token) {
                 await refreshFavorites();
               }
-            } catch (error) {
+            } catch (err) {
               setIsLoading(false);
+              console.error(err);
             }
           } else {
             setIsLoading(false);
           }
         });
-        
+
         // Cleanup subscription
         return () => unsubscribe();
       } catch (error) {
         // User not authenticated, skip fetching favorites
         setIsLoading(false);
+        console.error(error)
       }
     };
-    
+
     checkAuthAndFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -57,7 +59,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
     try {
       const { getFavorites } = await import('@/lib/api');
       const favoritesData = await getFavorites();
-      
+
       // Extract song IDs from favorites
       const songIds = new Set<string>((favoritesData as { favorites: Array<{ song: { id: string } }> }).favorites.map((fav) => fav.song.id));
       setFavorites(songIds);
@@ -79,7 +81,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   // Toggle favorite status with optimistic updates
   const toggleFavorite = useCallback(async (songId: string) => {
     const wasFavorited = favorites.has(songId);
-    
+
     // Optimistic update
     setFavorites((prev) => {
       const newFavorites = new Set(prev);
@@ -93,7 +95,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
     try {
       const { addFavorite, removeFavorite } = await import('@/lib/api');
-      
+
       if (wasFavorited) {
         await removeFavorite(songId);
       } else {
@@ -101,7 +103,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
-      
+
       // Rollback on error
       setFavorites((prev) => {
         const newFavorites = new Set(prev);
@@ -112,18 +114,18 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         }
         return newFavorites;
       });
-      
+
       throw error;
     }
   }, [favorites]);
 
-  const value: FavoritesContextValue = {
+  const value: FavoritesContextValue = useMemo(() => ({
     favorites,
     isLoading,
     toggleFavorite,
     isFavorite,
     refreshFavorites,
-  };
+  }), [favorites, isFavorite, isLoading, refreshFavorites, toggleFavorite]);
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;
 }

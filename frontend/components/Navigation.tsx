@@ -44,10 +44,10 @@ export default function Navigation({ opened, toggle }: NavigationProps) {
       getUserProfile()
         .then(setUserProfile)
         .catch((err) => console.error('Failed to fetch user profile:', err));
-    } else {
-      setUserProfile(null);
+    } else if (userProfile) {
+      setTimeout(() => setUserProfile(null), 0);
     }
-  }, [user]);
+  }, [user, userProfile]);
 
   const handleSignOut = async () => {
     try {

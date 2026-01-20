@@ -14,7 +14,8 @@
     "start:backend": "pnpm --filter backend start",
     "start:frontend": "pnpm --filter frontend start",
     "lint": "pnpm --filter backend lint && pnpm --filter frontend lint",
-    "lint:fix": "pnpm --filter backend lint:fix"
+    "lint:fix": "pnpm --filter backend lint:fix",
+    "test": "pnpm --filter backend test && pnpm --filter frontend test"
   },
   "packageManager": "pnpm@9.0.0",
   "devDependencies": {
