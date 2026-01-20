@@ -64,10 +64,14 @@ describe('LoginPage', () => {
   it('handles email/password submission', async () => {
     renderWithMantine(<LoginPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password/i), 'password123')
+    // Use more specific form interaction
+    const emailInput = screen.getByLabelText(/email address/i)
+    const passwordInput = screen.getByLabelText(/^password/i)
+    const submitButton = screen.getByRole('button', { name: /^sign in$/i })
 
-    await user.click(screen.getByRole('button', { name: /^sign in$/i }))
+    await user.type(emailInput, 'test@example.com')
+    await user.type(passwordInput, 'password123')
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(mockSignIn).toHaveBeenCalledWith('test@example.com', 'password123')
@@ -79,13 +83,31 @@ describe('LoginPage', () => {
   it('handles google sign in', async () => {
     renderWithMantine(<LoginPage />)
 
-    await user.click(screen.getByRole('button', { name: /sign in with google/i }))
+    const googleButton = screen.getByRole('button', { name: /sign in with google/i })
+    await user.click(googleButton)
 
     await waitFor(() => {
       expect(mockSignInWithGoogle).toHaveBeenCalled()
     })
 
     expect(mockPush).toHaveBeenCalledWith('/library')
+  })
+
+  it('displays error message for Google sign-in failure', async () => {
+    mockSignInWithGoogle.mockRejectedValue(new Error('Google sign-in failed'))
+
+    renderWithMantine(<LoginPage />)
+
+    const googleButton = screen.getByRole('button', { name: /sign in with google/i })
+    await user.click(googleButton)
+
+    await waitFor(() => {
+      expect(notifications.show).toHaveBeenCalledWith(expect.objectContaining({
+        title: 'Google Sign In Failed',
+        message: 'Google sign-in failed',
+        color: 'red',
+      }))
+    })
   })
 
   it('displays error message on failure', async () => {

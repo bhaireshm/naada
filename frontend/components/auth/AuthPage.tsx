@@ -4,27 +4,17 @@ import { Loader } from '@mantine/core';
 import { Suspense } from 'react';
 import { AuthForm } from './AuthForm';
 import { AuthLayout } from './AuthLayout';
+import { AUTH_CONFIG } from '@/lib/auth/config';
 
 interface AuthPageProps {
   readonly mode: 'login' | 'register';
 }
 
-const PAGE_CONFIG = {
-  login: {
-    title: 'Welcome Back',
-    subtitle: 'Sign in to your music library',
-  },
-  register: {
-    title: 'Create Account',
-    subtitle: 'Sign up to start building your music library',
-  },
-};
-
 function AuthPageContent({ mode }: AuthPageProps) {
-  const currentConfig = PAGE_CONFIG[mode];
+  const config = AUTH_CONFIG[mode];
 
   return (
-    <AuthLayout title={currentConfig.title} subtitle={currentConfig.subtitle}>
+    <AuthLayout title={config.title} subtitle={config.subtitle}>
       <AuthForm mode={mode} />
     </AuthLayout>
   );

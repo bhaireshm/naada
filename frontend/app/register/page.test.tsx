@@ -1,7 +1,6 @@
 import { useAuth } from '@/hooks/useAuth'
 import { theme1Dark } from "@/lib/theme"
 import { MantineProvider } from '@mantine/core'
-import { notifications } from '@mantine/notifications'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe, toHaveNoViolations } from 'jest-axe'
@@ -13,11 +12,6 @@ expect.extend(toHaveNoViolations)
 // Mock the hooks
 jest.mock('@/hooks/useAuth')
 jest.mock('next/navigation')
-jest.mock('@mantine/notifications', () => ({
-  notifications: {
-    show: jest.fn(),
-  },
-}))
 
 const renderWithMantine = (ui: React.ReactNode) => {
   return render(
@@ -65,11 +59,16 @@ describe('RegisterPage', () => {
   it('handles email/password registration', async () => {
     renderWithMantine(<RegisterPage />)
 
-    await user.type(screen.getByLabelText(/email address/i), 'newuser@example.com')
-    await user.type(screen.getByLabelText(/^password/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    // Use more specific form interaction
+    const emailInput = screen.getByLabelText(/email address/i)
+    const passwordInput = screen.getByLabelText(/^password/i)
+    const confirmPasswordInput = screen.getByLabelText(/confirm password/i)
+    const submitButton = screen.getByRole('button', { name: /^sign up$/i })
 
-    await user.click(screen.getByRole('button', { name: /^sign up$/i }))
+    await user.type(emailInput, 'newuser@example.com')
+    await user.type(passwordInput, 'password123')
+    await user.type(confirmPasswordInput, 'password123')
+    await user.click(submitButton)
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith('newuser@example.com', 'password123')

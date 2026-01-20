@@ -1,6 +1,6 @@
-import { authService } from '../authService';
 import { auth } from '../../config/firebase';
 import { User } from '../../models/User';
+import { authService } from '../authService';
 
 // Mock dependencies
 jest.mock('../../config/firebase', () => ({
@@ -108,54 +108,54 @@ describe('AuthService', () => {
 
   describe('linkGoogleAccount', () => {
     it('should successfully link a google account', async () => {
-        const userId = 'user-123';
-        const googleIdToken = 'google-token';
-        const decodedGoogle = {
-            uid: 'google-uid-123',
-            email: 'test@example.com',
-            name: 'Google User',
-            picture: 'google-pic.jpg',
-            firebase: {
-                identities: { 'google.com': ['google-uid-123'] }
-            }
-        };
+      const userId = 'user-123';
+      const googleIdToken = 'google-token';
+      const decodedGoogle = {
+        uid: 'google-uid-123',
+        email: 'test@example.com',
+        name: 'Google User',
+        picture: 'google-pic.jpg',
+        firebase: {
+          identities: { 'google.com': ['google-uid-123'] }
+        }
+      };
 
-        (auth.verifyIdToken as jest.Mock).mockResolvedValue(decodedGoogle);
-        
-        const mockUser = {
-            uid: userId,
-            email: 'test@example.com',
-            authProviders: ['email'],
-            save: jest.fn(),
-        };
+      (auth.verifyIdToken as jest.Mock).mockResolvedValue(decodedGoogle);
 
-        // 1. Check conflict -> null
-        // 2. Find current user -> mockUser
-        (User.findOne as jest.Mock)
-            .mockResolvedValueOnce(null)
-            .mockResolvedValueOnce(mockUser);
+      const mockUser = {
+        uid: userId,
+        email: 'test@example.com',
+        authProviders: ['email'],
+        save: jest.fn(),
+      };
 
-        const result = await authService.linkGoogleAccount(userId, googleIdToken);
+      // 1. Check conflict -> null
+      // 2. Find current user -> mockUser
+      (User.findOne as jest.Mock)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(mockUser);
 
-        expect(auth.verifyIdToken).toHaveBeenCalledWith(googleIdToken);
-        expect(result.authProviders).toContain('google');
-        expect(mockUser.save).toHaveBeenCalled();
+      const result = await authService.linkGoogleAccount(userId, googleIdToken);
+
+      expect(auth.verifyIdToken).toHaveBeenCalledWith(googleIdToken);
+      expect(result.authProviders).toContain('google');
+      expect(mockUser.save).toHaveBeenCalled();
     });
 
     it('should throw if google email is already in use by another provider', async () => {
-        const userId = 'user-123';
-        const googleIdToken = 'google-token';
-        
-        (auth.verifyIdToken as jest.Mock).mockResolvedValue({
-            uid: 'google-uid-123',
-            email: 'other@example.com'
-        });
+      const userId = 'user-123';
+      const googleIdToken = 'google-token';
 
-        // Check conflict -> returns a user
-        (User.findOne as jest.Mock).mockResolvedValue({ uid: 'other-user' });
+      (auth.verifyIdToken as jest.Mock).mockResolvedValue({
+        uid: 'google-uid-123',
+        email: 'other@example.com'
+      });
 
-        await expect(authService.linkGoogleAccount(userId, googleIdToken))
-            .rejects.toThrow('GOOGLE_ACCOUNT_IN_USE');
+      // Check conflict -> returns a user
+      (User.findOne as jest.Mock).mockResolvedValue({ uid: 'other-user' });
+
+      await expect(authService.linkGoogleAccount(userId, googleIdToken))
+        .rejects.toThrow('GOOGLE_ACCOUNT_IN_USE');
     });
   });
 });

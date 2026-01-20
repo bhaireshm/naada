@@ -34,7 +34,7 @@ export function AuthLayout({ title, subtitle, children }: Readonly<AuthLayoutPro
           })}
         >
           <Stack gap="md">
-            <div>
+            <Box>
               <Title
                 order={1}
                 ta="center"
@@ -51,7 +51,7 @@ export function AuthLayout({ title, subtitle, children }: Readonly<AuthLayoutPro
               <Text c="dimmed" size="sm" ta="center">
                 {subtitle}
               </Text>
-            </div>
+            </Box>
 
             {children}
           </Stack>
